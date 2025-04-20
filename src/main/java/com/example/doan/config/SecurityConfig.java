@@ -21,7 +21,7 @@ public class SecurityConfig  {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authozire -> authozire
-                                // .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/user/login").permitAll()
                                 .requestMatchers("/game/*").permitAll()
                                 // .requestMatchers("/Atm/search").permitAll()

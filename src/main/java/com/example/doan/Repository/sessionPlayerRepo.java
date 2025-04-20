@@ -34,7 +34,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
               AND (
                     (h.namegame = 'Reng Reng' AND h.result = 'Win')
                     OR
-                    (h.namegame = 'Chẵn lẻ' AND (
+                    (h.namegame = 'Tài xỉu' AND (
                         (MOD(h.result, 2) = 0 AND h.choice = 'cuoc_chan') OR
                         (MOD(h.result, 2) = 1 AND h.choice = 'cuoc_le')
                     ))

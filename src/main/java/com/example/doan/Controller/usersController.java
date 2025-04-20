@@ -75,8 +75,6 @@ public class usersController {
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("id", user.get().getId());
             responseBody.put("fullname", user.get().getFullname());
-            Optional<atm> atmInfo = atmRepository.findByIdPlayer(user.get().getId());
-            responseBody.put("balance", atmInfo.get().getBalance());
 
             //token
             String token = jwtUtil.generateToken(user.get().getTk(),user.get().getRole());
@@ -88,18 +86,19 @@ public class usersController {
         }
     }
     @PostMapping("/regis") // Đăng ký
-    public ResponseEntity<?> regis
-        (@Valid @RequestBody users regisRequest,
-        HttpServletRequest httpRequest,
-        HttpSession session,
-        HttpServletResponse response) {
-        Optional <users> user = usersRepository.findByTk(regisRequest.getTk());
-        if(user.isPresent()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Tài khoản đã tồn tại");
-        }
-        else {
-            usersRepository.save(regisRequest);
-            return ResponseEntity.ok("Đăng ký thành công");
+    public ResponseEntity<?> regis(@RequestBody users entity){
+        Optional <users> user = usersRepository.findByTk(entity.getTk());
+        Map<String, Object> response = new HashMap<>();
+        if (user.isPresent()) {
+            response.put("status", "error");
+            response.put("message", "Tài khoản đã tồn tại");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } else {
+            entity.setRole("user");
+            usersRepository.save(entity);
+            response.put("status", "success");
+            response.put("message", "Đăng ký thành công");
+            return ResponseEntity.ok(response);
         }
     }
     @PostMapping("/info") 
