@@ -75,7 +75,31 @@ public class AtmController {
         return ResponseEntity.ok(atm);
     }
 
-    // Lấy số dư tài khoản mỗi lần cuối ngày theo thời gian thực
+    @PostMapping("/createATM")
+    public ResponseEntity<?> registerAtm(@RequestBody atm request) {
+        try {
+            // Tìm người chơi theo idPlayer
+            Optional<atm> atmOpt = atmRepository.findByIdPlayer(request.getIdPlayer());
+
+            if (atmOpt.isPresent()) {
+                // Nếu tài khoản ATM đã tồn tại, cập nhật stk
+                atm existingAtm = atmOpt.get();
+                existingAtm.setStk(request.getStk()); // Cập nhật stk mới
+                atm updatedAtm = atmRepository.save(existingAtm); // Lưu lại vào DB
+
+                return ResponseEntity.ok(updatedAtm); // Trả về tài khoản đã cập nhật
+            } else {
+                // Nếu chưa có tài khoản ATM, tạo mới
+                atm newAtm = new atm(request.getIdPlayer(), request.getStk());
+                atm savedAtm = atmRepository.save(newAtm);
+                return ResponseEntity.ok(savedAtm); // Trả về tài khoản mới tạo
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
+        }
+
+    }
+
     @GetMapping("/getDailyClosingBalance")
     public ResponseEntity<?> getDailyClosingBalance(
             @RequestParam int playerId,
@@ -142,7 +166,7 @@ public class AtmController {
     @GetMapping("/getDailyRecharge")
     public ResponseEntity<?> getDailyrecharges(
             @RequestParam int playerId,
-            @RequestParam String endDateStr) { // Ngày kết thúc (mới nhất) từ client
+            @RequestParam String endDateStr) {
 
         try {
             // Parse ngày kết thúc từ client
