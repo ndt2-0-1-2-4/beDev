@@ -22,20 +22,30 @@ public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
             "ORDER BY timechange DESC ", nativeQuery = true)
     List<Object[]> findTop5ByIdPlayer(@Param("idPlayer") int idPlayer);
 
-     // xóa tất cả lịch sử giao dịch của người chơi
+    // xóa tất cả lịch sử giao dịch của người chơi
     @Modifying
     @Transactional
     @Query("DELETE FROM historyBalance h WHERE h.idPlayer = :userId")
     void deleteAllByUser(@Param("userId") int userId);
-    @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :playerId AND " +
-    "h.timeChange >= :startOfDay AND h.timeChange <= :endOfDay " +
-    "ORDER BY h.timeChange DESC")
-    List<historyBalance> findDailyBalancesByPlayer(
-    @Param("playerId") int playerId,
-    @Param("startOfDay") String startOfDay,
-    @Param("endOfDay") String endOfDay
-    );
 
-    
+    // Lấy số dư
+    @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :playerId AND " +
+            "h.timeChange >= :startOfDay AND h.timeChange <= :endOfDay " +
+            "ORDER BY h.timeChange DESC")
+    List<historyBalance> findDailyBalancesByPlayer(
+            @Param("playerId") int playerId,
+            @Param("startOfDay") String startOfDay,
+            @Param("endOfDay") String endOfDay);
+
+    // Lấy lịch sử nạp tiền
+    @Query("SELECT h FROM HistoryBalance h " +
+            "WHERE h.playerId = :playerId " +
+            "AND h.timeChange BETWEEN :startTime AND :endTime " +
+            "AND h.content = 'Nạp tiền' " +
+            "ORDER BY h.timeChange DESC")
+    List<historyBalance> findDailyRechargeByPlayer(
+            @Param("playerId") int playerId,
+            @Param("startTime") String startTime,
+            @Param("endTime") String endTime);
 
 }
