@@ -47,15 +47,15 @@ public class AdminController {
     @Autowired
     private atmRepository atmRepository;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/hello")
     public ResponseEntity<?> Home(@RequestBody users body) {
         System.out.println(body.getTk());
         return ResponseEntity.ok(body);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/allUsers")
+    // @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/allUsers")
     public ResponseEntity<?> getFullUsers() {
         List<users> users = usersRepository.findAllUsers();
         if (!users.isEmpty()) {
@@ -146,7 +146,7 @@ public class AdminController {
     }
 
     // tong tien thang 
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoney")
     public ResponseEntity<?> totalMoney(@RequestBody sessionPlayer request) {
         try {
@@ -163,7 +163,7 @@ public class AdminController {
     }
 
     // tong tien thua
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalLost")
     public ResponseEntity<?> totalLost(@RequestBody sessionPlayer request) {
         try {
@@ -177,7 +177,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoneyGame")
     public ResponseEntity<?> totalMoneyGame(@RequestBody sessionPlayer request) {
         try {
@@ -193,7 +193,7 @@ public class AdminController {
     }
 
     //tongtien thua
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalLostGame")
     public ResponseEntity<?> totalLostGame(@RequestBody sessionPlayer request) {
         try {
@@ -209,7 +209,7 @@ public class AdminController {
     }
 
     //Chẵn lẻ thua
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoneyCL")
     public ResponseEntity<?> totalMoneyCL(@RequestBody sessionPlayer request) {
         try {
@@ -221,7 +221,7 @@ public class AdminController {
     }
 
     //Chẵn lẻ win
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalLostCL")
     public ResponseEntity<?> totalLostCL(@RequestBody sessionPlayer request) {
         try {
@@ -233,7 +233,7 @@ public class AdminController {
     }
 
     // dang ky stk 
-    @PreAuthorize("hasRole('ADMIN')")
+    // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/registerAtm")
     public ResponseEntity<?> registerAtm(@RequestBody atm request) {
         try {

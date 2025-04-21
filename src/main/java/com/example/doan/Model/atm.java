@@ -28,6 +28,11 @@ public class atm {
         this.balance = balance;
         this.stk = stk;
     }
+
+    public atm (int idPlayer , String stk){
+        this.idPlayer = idPlayer;
+        this.stk = stk;
+    }
     
     public int getIdPlayer(){
         return idPlayer;
