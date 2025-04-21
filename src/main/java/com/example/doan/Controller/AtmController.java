@@ -1,17 +1,27 @@
 package com.example.doan.Controller;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Optional;
+import java.util.Map;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.doan.Model.atm;
 import com.example.doan.Model.historyBalance;
 import com.example.doan.Repository.HisBalanceRepo;
 import com.example.doan.Repository.atmRepository;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -23,6 +33,7 @@ public class AtmController {
     private atmRepository atmRepository;
     @Autowired 
     private HisBalanceRepo hisBalanceRepo;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @PostMapping("/updateBalance") // trừ tiền ở số dư của người dùng
     public ResponseEntity<?> upadateBalan(@RequestBody atm entity) {
@@ -61,6 +72,7 @@ public class AtmController {
         Optional<atm>atm=atmRepository.findByStk(entity.getStk());
         return ResponseEntity.ok(atm);
     }
+<<<<<<< HEAD
     @PostMapping("/createATM")
     public ResponseEntity<?> registerAtm(@RequestBody atm request) {
         try {
@@ -86,5 +98,72 @@ public class AtmController {
         
     }
 
+=======
+    //Lấy số dư tài khoản mỗi lần cuối ngày theo thời gian thực
+    @GetMapping("/getDailyClosingBalance")
+    public ResponseEntity<?> getDailyClosingBalance(
+            @RequestParam int playerId,
+            @RequestParam String startDate) {  // Ngày bắt đầu từ client
+        
+        try {
+            // Parse ngày bắt đầu từ client
+            LocalDate endDate = LocalDate.parse(startDate); // endDate là ngày mới nhất
+            LocalDate startDay = endDate.minusDays(6);     // Lấy 7 ngày (endDate - 6 ngày)
+            
+            // Tạo danh sách để lưu kết quả 7 ngày
+            List<Map<String, Object>> weeklyBalances = new ArrayList<>();
+            
+            // Lặp qua từ startDay đến endDate (7 ngày)
+            for (LocalDate currentDate = startDay; 
+                 !currentDate.isAfter(endDate); 
+                 currentDate = currentDate.plusDays(1)) {
+                
+                String startOfDay = currentDate.atStartOfDay().format(formatter);
+                String endOfDay = currentDate.atTime(LocalTime.MAX).format(formatter);
+                
+                List<historyBalance> dailyBalances = hisBalanceRepo.findDailyBalancesByPlayer(
+                    playerId,
+                    startOfDay,
+                    endOfDay
+                );
+                
+                Map<String, Object> dailyResponse = new HashMap<>();
+                dailyResponse.put("date", currentDate.toString());
+                
+                if (dailyBalances.isEmpty()) {
+                    dailyResponse.put("message", "Không tìm thấy giao dịch");
+                    dailyResponse.put("hasData", false);
+                } else {
+                    historyBalance closingBalance = dailyBalances.get(0); // Giao dịch cuối ngày
+                    dailyResponse.put("closingBalance", closingBalance.getBalance());
+                    dailyResponse.put("lastTransactionTime", closingBalance.getTimeChange());
+                    dailyResponse.put("content", closingBalance.getContent());
+                    dailyResponse.put("hasData", true);
+                }
+                
+                weeklyBalances.add(dailyResponse);
+            }
+            
+            // Sắp xếp theo thứ tự ngày giảm dần (mới nhất đầu tiên)
+            weeklyBalances.sort((a, b) -> 
+                LocalDate.parse((String) b.get("date"))
+                        .compareTo(LocalDate.parse((String) a.get("date"))));
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("playerId", playerId);
+            response.put("startDate", startDay.toString()); // Ngày xa nhất
+            response.put("endDate", endDate.toString());   // Ngày gần nhất
+            response.put("dailyBalances", weeklyBalances);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Lỗi khi xử lý yêu cầu");
+            errorResponse.put("details", e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+>>>>>>> 16e065ad0e1945c747811ff140886d87ae650790
     
 }

@@ -27,6 +27,14 @@ public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
     @Transactional
     @Query("DELETE FROM historyBalance h WHERE h.idPlayer = :userId")
     void deleteAllByUser(@Param("userId") int userId);
+    @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :playerId AND " +
+    "h.timeChange >= :startOfDay AND h.timeChange <= :endOfDay " +
+    "ORDER BY h.timeChange DESC")
+    List<historyBalance> findDailyBalancesByPlayer(
+    @Param("playerId") int playerId,
+    @Param("startOfDay") String startOfDay,
+    @Param("endOfDay") String endOfDay
+    );
 
     
 
