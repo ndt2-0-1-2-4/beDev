@@ -125,7 +125,7 @@ public class AdminController {
 
         try {
             // Xoá dữ liệu phụ (nếu có)
-            // betHisfbxsRepo.deleteByBetHisfbxsId(userId);
+            betHisfbxsRepo.deleteAllBetHisByUser(userId);
             MessageRepo.deleteAllMessagesByUser(userId);
             sessionPlayerRepo.deleteByPlayerId(userId);
             atmRepository.deleteByAtmId(userId);
@@ -208,7 +208,7 @@ public class AdminController {
         }
     }
 
-    //Chẵn lẻ thua
+    //Chẵn lẻ win
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoneyCL")
     public ResponseEntity<?> totalMoneyCL(@RequestBody sessionPlayer request) {
@@ -220,7 +220,7 @@ public class AdminController {
         }
     }
 
-    //Chẵn lẻ win
+    //Chẵn lẻ thua
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalLostCL")
     public ResponseEntity<?> totalLostCL(@RequestBody sessionPlayer request) {

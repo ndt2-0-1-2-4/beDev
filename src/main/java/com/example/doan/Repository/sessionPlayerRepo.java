@@ -32,7 +32,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
       FROM sessionPlayer h
       WHERE h.playerid = :idPlayer
         AND (
-              (h.namegame = 'Reng Reng' AND h.result = 'Win')
+              (h.namegame = 'Reng Reng' AND h.result = 'Thắng')
               OR
               (h.namegame = 'Tài xỉu' AND (
                   (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'tai') OR
@@ -47,7 +47,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
       FROM sessionPlayer h
       WHERE h.playerid = :idPlayer
         AND (
-              (h.namegame = 'Reng Reng' AND h.result = 'Win')
+              (h.namegame = 'Reng Reng' AND h.result = 'Thua')
               OR
               (h.namegame = 'Tài xỉu' AND (
                   (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'xiu') OR
@@ -60,7 +60,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   @Query("SELECT SUM(h.bet) FROM sessionPlayer h WHERE h.playerid = :idPlayer AND h.result = 'Thua' AND h.namegame = 'Reng Reng'")
   Integer sumRengLost(@Param("idPlayer") Integer idPlayer);
 
-  @Query("SELECT SUM(h.bet) FROM sessionPlayer h WHERE h.playerid = :idPlayer AND h.result = 'Win' AND h.namegame = 'Reng Reng'")
+  @Query("SELECT SUM(h.bet) FROM sessionPlayer h WHERE h.playerid = :idPlayer AND h.result = 'Thắng' AND h.namegame = 'Reng Reng'")
   Integer sumRengWin(@Param("idPlayer") Integer idPlayer);
 
   @Query(value = """
