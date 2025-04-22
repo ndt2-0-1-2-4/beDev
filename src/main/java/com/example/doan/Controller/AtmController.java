@@ -74,9 +74,6 @@ public class AtmController {
         Optional<atm> atm = atmRepository.findByStk(entity.getStk());
         return ResponseEntity.ok(atm);
     }
-<<<<<<< HEAD
-    //Lấy số dư tài khoản mỗi lần cuối ngày theo thời gian thực
-=======
 
     @PostMapping("/createATM")
     public ResponseEntity<?> registerAtm(@RequestBody atm request) {
@@ -103,7 +100,6 @@ public class AtmController {
 
     }
 
->>>>>>> a187492fb82b79f827664763ed3e8da0acb20730
     @GetMapping("/getDailyClosingBalance")
     public ResponseEntity<?> getDailyClosingBalance(
             @RequestParam int playerId,
@@ -232,8 +228,4 @@ public class AtmController {
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
-<<<<<<< HEAD
-    
-=======
->>>>>>> a187492fb82b79f827664763ed3e8da0acb20730
 }
