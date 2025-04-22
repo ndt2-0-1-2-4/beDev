@@ -3,6 +3,8 @@ package com.example.doan.Repository;
 import com.example.doan.Model.betHisfbxs;
 import com.example.doan.Model.betHisfbxs.BetType;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,5 +33,10 @@ public interface betHisfbxsRepo extends JpaRepository<betHisfbxs, Integer> {
     );
 
     List<betHisfbxs> findByBetTypeAndStatusFalseAndBetTimeBetween(BetType betType, LocalDateTime start, LocalDateTime end);
+
+     @Modifying
+    @Transactional
+    @Query("DELETE FROM betHisfbxs h WHERE h.idPlayer = :userId")
+    void deleteAllBetHisByUser(@Param("userId") int userId);
     
 }
