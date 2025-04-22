@@ -1,5 +1,8 @@
 package com.example.doan.Controller;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,4 +66,40 @@ public class AtmController {
     }
 
     
+    @PostMapping("/calculate-reward")
+public ResponseEntity<?> calculateReward(@RequestBody atm request) {
+    String idPlayer = String.valueOf(request.getIdPlayer());
+
+    // Tính tổng tiền nạp theo "trans"
+    Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContent(idPlayer, "Nạp tiền");
+
+    if (totalDeposit == null || totalDeposit == 0) {
+        return ResponseEntity.ok("Người chơi chưa có giao dịch nạp tiền.");
+    }
+
+    // Ví dụ: nếu tổng nạp >= 1 triệu thì thưởng 2%
+    float reward = 0;
+    if (totalDeposit >= 1_000_000) {
+        reward = totalDeposit * 0.02f;
+    }
+
+    if (reward > 0) {
+        historyBalance bonusRecord = new historyBalance();
+        bonusRecord.setPlayerId(Integer.parseInt(idPlayer));
+        bonusRecord.setContent("Thưởng nạp tiền 5%");
+        bonusRecord.setTrans((int) reward);
+        bonusRecord.setBalance(0); // hoặc bạn có thể lấy số dư hiện tại nếu cần
+        bonusRecord.setTimeChange(LocalDateTime.now().toString());
+        hisBalanceRepo.save(bonusRecord);
+    }
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("idPlayer", idPlayer);
+    response.put("totalDeposit", totalDeposit);
+    response.put("reward", reward);
+    response.put("message", reward > 0 ? "Đã cộng thưởng vào lịch sử" : "Không đủ điều kiện nhận thưởng");
+
+    return ResponseEntity.ok(response);
+}
+
 }

@@ -31,5 +31,9 @@ public interface betHisfbxsRepo extends JpaRepository<betHisfbxs, Integer> {
     );
 
     List<betHisfbxs> findByBetTypeAndStatusFalseAndBetTimeBetween(BetType betType, LocalDateTime start, LocalDateTime end);
+
+
+    @Query("DELETE FROM betHisfbxs b WHERE b.idPlayer = :idPlayer")
+    void deleteByBetHisfbxsId(@Param("idplayer") int idPlayer);
     
 }

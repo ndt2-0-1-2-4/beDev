@@ -28,6 +28,11 @@ public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
     @Query("DELETE FROM historyBalance h WHERE h.idPlayer = :userId")
     void deleteAllByUser(@Param("userId") int userId);
 
-    
+    @Query("SELECT SUM(h.trans) FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content LIKE %:content%")
+    Float sumTotalDepositByIdAndContent(@Param("idPlayer") String idPlayer, @Param("content") String content);
+
+    // @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content LIKE %:content%")
+    // List<historyBalance> findAllByIdPlayerAndContent(@Param("idPlayer") String idPlayer, @Param("content") String content);
+
 
 }

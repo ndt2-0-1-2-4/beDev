@@ -125,7 +125,7 @@ public class AdminController {
 
         try {
             // Xoá dữ liệu phụ (nếu có)
-            // betHisfbxsRepo.deleteByBetHisfbxsId(userId);
+            betHisfbxsRepo.deleteByBetHisfbxsId(userId);
             MessageRepo.deleteAllMessagesByUser(userId);
             sessionPlayerRepo.deleteByPlayerId(userId);
             atmRepository.deleteByAtmId(userId);
