@@ -72,7 +72,6 @@ public class AtmController {
         Optional<atm>atm=atmRepository.findByStk(entity.getStk());
         return ResponseEntity.ok(atm);
     }
-<<<<<<< HEAD
     @PostMapping("/createATM")
     public ResponseEntity<?> registerAtm(@RequestBody atm request) {
         try {
@@ -98,7 +97,6 @@ public class AtmController {
         
     }
 
-=======
     //Lấy số dư tài khoản mỗi lần cuối ngày theo thời gian thực
     @GetMapping("/getDailyClosingBalance")
     public ResponseEntity<?> getDailyClosingBalance(
@@ -164,6 +162,5 @@ public class AtmController {
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
->>>>>>> 16e065ad0e1945c747811ff140886d87ae650790
     
 }
