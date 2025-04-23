@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonGetter;
 
 @Entity
-@Table(name = "betHisfbxs")
+@Table(name = "bethisfbxs")
 @Access(AccessType.FIELD)
 public class betHisfbxs {
 

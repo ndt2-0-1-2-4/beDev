@@ -16,23 +16,42 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
-    @Query(value = "SELECT id_player, timechange, content, trans, balance " +
-            "FROM historybalance " +
-            "WHERE id_player = :idPlayer " +
-            "ORDER BY timechange DESC ", nativeQuery = true)
-    List<Object[]> findTop5ByIdPlayer(@Param("idPlayer") int idPlayer);
+        @Query(value = "SELECT id_player, timechange, content, trans, balance " +
+                        "FROM historybalance " +
+                        "WHERE id_player = :idPlayer " +
+                        "ORDER BY timechange DESC ", nativeQuery = true)
+        List<Object[]> findTop5ByIdPlayer(@Param("idPlayer") int idPlayer);
 
-     // xóa tất cả lịch sử giao dịch của người chơi
-    @Modifying
-    @Transactional
-    @Query("DELETE FROM historyBalance h WHERE h.idPlayer = :userId")
-    void deleteAllByUser(@Param("userId") int userId);
+        // xóa tất cả lịch sử giao dịch của người chơi
+        @Modifying
+        @Transactional
+        @Query("DELETE FROM historyBalance h WHERE h.idPlayer = :userId")
+        void deleteAllByUser(@Param("userId") int userId);
 
-    @Query("SELECT SUM(h.trans) FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content LIKE %:content%")
-    Float sumTotalDepositByIdAndContent(@Param("idPlayer") String idPlayer, @Param("content") String content);
+        @Query("SELECT SUM(h.trans) FROM historyBalance h WHERE h.idPlayer = :idPlayer AND LOWER(h.content) LIKE LOWER(CONCAT('%', :content, '%'))")
+        Float sumTotalDepositByIdAndContent(@Param("idPlayer") Integer idPlayer, @Param("content") String content);
 
     // @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content LIKE %:content%")
-    // List<historyBalance> findAllByIdPlayerAndContent(@Param("idPlayer") String idPlayer, @Param("content") String content);
+    // List<historyBalance> findAllByIdPlayerAndContent(@Param("idPlayer") Integer idPlayer, @Param("content") String content);
 
+        // Lấy số dư
+        @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :playerId AND " +
+                        "h.timeChange >= :startOfDay AND h.timeChange <= :endOfDay " +
+                        "ORDER BY h.timeChange DESC")
+        List<historyBalance> findDailyBalancesByPlayer(
+                        @Param("playerId") int playerId,
+                        @Param("startOfDay") String startOfDay,
+                        @Param("endOfDay") String endOfDay);
+
+        // Lấy lịch sử nạp tiền
+        @Query("SELECT h FROM historyBalance h " +
+                        "WHERE h.idPlayer = :playerId " +
+                        "AND h.timeChange BETWEEN :startTime AND :endTime " +
+                        "AND h.content = 'Nạp tiền' " +
+                        "ORDER BY h.timeChange DESC")
+        List<historyBalance> findDailyRechargeByPlayer(
+                        @Param("playerId") int playerId,
+                        @Param("startTime") String startTime,
+                        @Param("endTime") String endTime);
 
 }
