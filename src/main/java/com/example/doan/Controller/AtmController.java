@@ -235,53 +235,55 @@ public ResponseEntity<?> calculateReward(@RequestBody atm request) {
     Integer idPlayer = request.getIdPlayer();
     System.out.println("Nhận idPlayer: " + idPlayer);
 
-   
     Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "%Nạp tiền%");
 
-    if (totalDeposit == null || totalDeposit == 0) {
-        return ResponseEntity.ok("Người chơi chưa có giao dịch nạp tiền.");
+    if (totalDeposit == null) {
+        totalDeposit = 0f;
     }
 
-    float reward = 0f;
-    if (totalDeposit >= 200_000_000) {
-        reward = 1_579_000;
-    } else if (totalDeposit >= 100_000_000) {
-        reward = 879_000;
-    } else if (totalDeposit >= 50_000_000) {
-        reward = 360_000;
-    } else if (totalDeposit >= 10_000_000) {
-        reward = 100_000;
-    } else if (totalDeposit >= 2_000_000) {
-        reward = 40_000;
-    }
+    int[][] rewardLevels = {
+        {200_000_000, 1_579_000},
+        {100_000_000,   879_000},
+        {50_000_000,    360_000},
+        {10_000_000,    100_000},
+        {2_000_000,      40_000}
+    };
 
     Integer currentBalance = atmRepository.findBalanceByIdPlayer(idPlayer);
+    int rewarded = 0;
 
-    if (reward > 0) {
-        historyBalance bonusRecord = new historyBalance();
-        bonusRecord.setPlayerId(idPlayer);
-        bonusRecord.setContent("Thưởng nạp tiền");
-        bonusRecord.setTrans((int) reward);
-        bonusRecord.setBalance(currentBalance != null ? currentBalance : 0); 
-        bonusRecord.setTimeChange(LocalDateTime.now().format(formatter));
-        hisBalanceRepo.save(bonusRecord);
+    for (int[] level : rewardLevels) {
+        int threshold = level[0];
+        int reward = level[1];
 
-    // cộng thưởng vào atm
-    Optional<atm> existingAtmOpt = atmRepository.findByIdPlayer(idPlayer);
-    if (existingAtmOpt.isPresent()) {
-        atm existingAtm = existingAtmOpt.get();
-        System.out.println("Balance trước cộng thưởng: " + existingAtm.getBalance());
-        existingAtm.setBalance(existingAtm.getBalance() + (int) reward);
-        System.out.println("Balance sau cộng thưởng: " + existingAtm.getBalance());
-        atmRepository.save(existingAtm);
-    }
+        if (totalDeposit >= threshold && !hisBalanceRepo.hasReceivedReward(idPlayer, reward)) {
+            // Ghi nhận thưởng
+            historyBalance bonusRecord = new historyBalance();
+            bonusRecord.setPlayerId(idPlayer);
+            bonusRecord.setContent("Thưởng nạp tiền");
+            bonusRecord.setTrans(reward);
+            bonusRecord.setBalance(currentBalance != null ? currentBalance + reward : reward);
+            bonusRecord.setTimeChange(LocalDateTime.now().format(formatter));
+            hisBalanceRepo.save(bonusRecord);
+
+            // Cộng vào bảng atm
+            Optional<atm> existingAtmOpt = atmRepository.findByIdPlayer(idPlayer);
+            if (existingAtmOpt.isPresent()) {
+                atm existingAtm = existingAtmOpt.get();
+                existingAtm.setBalance(existingAtm.getBalance() + reward);
+                atmRepository.save(existingAtm);
+            }
+
+            rewarded = reward;
+            break; // chỉ cộng 1 lần, ở mốc cao nhất
+        }
     }
 
     Map<String, Object> response = new HashMap<>();
     response.put("idPlayer", idPlayer);
     response.put("totalDeposit", totalDeposit);
-    response.put("reward", reward);
-    response.put("message", reward > 0 ? "Đã cộng thưởng vào lịch sử" : "Không đủ điều kiện nhận thưởng");
+    response.put("reward", rewarded);
+    response.put("message", rewarded > 0 ? "Đã cộng thưởng vào lịch sử" : "Không đủ điều kiện nhận thêm thưởng");
 
     return ResponseEntity.ok(response);
 }

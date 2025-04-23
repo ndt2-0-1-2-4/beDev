@@ -31,6 +31,9 @@ public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
         @Query("SELECT SUM(h.trans) FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content LIKE :content")
         Float sumTotalDepositByIdAndContentLike(@Param("idPlayer") Integer idPlayer, @Param("content") String content);
 
+        @Query("SELECT COUNT(h) > 0 FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content = 'Thưởng nạp tiền' AND h.trans = :reward")
+        boolean hasReceivedReward(@Param("idPlayer") Integer idPlayer, @Param("reward") Integer reward);
+
 
         // Lấy số dư
         @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :playerId AND " +
