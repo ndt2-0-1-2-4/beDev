@@ -62,7 +62,12 @@ public class AtmController {
         if (atmInfo.isPresent()) {
             return ResponseEntity.ok(atmInfo.get());
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy thông tin ATM");
+            // Tạo đối tượng lỗi
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Không tìm thấy thông tin ATM");
+            
+            // Trả về đối tượng lỗi dưới dạng JSON
+            return ResponseEntity.ok(errorResponse);
         }
     }
 
