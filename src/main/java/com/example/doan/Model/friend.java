@@ -7,7 +7,9 @@ public class friend {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
+    @Column(name = "id_my")
     private int idMy;
+    @Column(name = "id_friend")
     private int idFriend;
     private String relative;
 

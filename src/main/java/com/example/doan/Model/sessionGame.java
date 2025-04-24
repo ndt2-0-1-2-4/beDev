@@ -7,8 +7,11 @@ public class sessionGame {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(name = "namegame")
     private String namegame;
+    @Column(name = "result")
     private String result ;
+    @Column(name = "timeoccurs")
     private String timeoccurs;
 
 
