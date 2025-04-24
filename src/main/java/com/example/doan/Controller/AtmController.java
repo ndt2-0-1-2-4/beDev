@@ -251,7 +251,7 @@ public ResponseEntity<?> calculateReward(@RequestBody atm request) {
         {100_000_000,   879_000},
         {50_000_000,    360_000},
         {10_000_000,    100_000},
-        {2_000_000,      40_000}
+        {20_000,      40_000}
     };
 
     Integer currentBalance = atmRepository.findBalanceByIdPlayer(idPlayer);
