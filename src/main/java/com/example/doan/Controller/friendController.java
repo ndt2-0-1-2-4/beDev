@@ -13,6 +13,7 @@ import com.example.doan.Repository.friendRepository;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -227,9 +228,22 @@ public ResponseEntity<Map<String, Object>> deleteFriendRequest(@RequestBody frie
     @PostMapping("/getRelativeMy")
     public ResponseEntity<?> getRelativeMy(@RequestBody friend friend) {
         List<Object[]> relatives = friendRepository.findByRelative(friend.getIdMy());
+
         if (!relatives.isEmpty()) {
-            return ResponseEntity.ok(relatives);
+            List<Map<String, Object>> result = relatives.stream().map(obj -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("idFriend", obj[0]);
+                map.put("name", obj[1]);
+                if (obj.length > 2) {
+                    map.put("relative", obj[2]);
+                }
+                return map;
+            }).toList();
+        
+            return ResponseEntity.ok(result);
         }
-        return ResponseEntity.ok(null);
+        
+        return ResponseEntity.ok(Collections.emptyList());
+        
     }
 }
