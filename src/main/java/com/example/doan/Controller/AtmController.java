@@ -82,6 +82,8 @@ public class AtmController {
         try {
             // Tìm người chơi theo idPlayer
             Optional<atm> atmOpt = atmRepository.findByIdPlayer(request.getIdPlayer());
+            int balance = 5000;
+            request.setBalance(balance); // Đặt số dư mặc định là 5000
 
             if (atmOpt.isPresent()) {
                 // Nếu tài khoản ATM đã tồn tại, cập nhật stk
@@ -92,7 +94,7 @@ public class AtmController {
                 return ResponseEntity.ok(updatedAtm); // Trả về tài khoản đã cập nhật
             } else {
                 // Nếu chưa có tài khoản ATM, tạo mới
-                atm newAtm = new atm(request.getIdPlayer(), request.getStk());
+                atm newAtm = new atm(request.getIdPlayer() , request.getBalance(), request.getStk());
                 atm savedAtm = atmRepository.save(newAtm);
                 return ResponseEntity.ok(savedAtm); // Trả về tài khoản mới tạo
             }
