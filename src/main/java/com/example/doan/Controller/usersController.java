@@ -149,7 +149,7 @@ public class usersController {
     }
 
     // Cập nhật mật khẩu mới
-    user.setMk(newPassword);
+    user.setMk(newPassword);    
     usersRepository.save(user);
 
     return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
