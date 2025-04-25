@@ -224,4 +224,12 @@ public ResponseEntity<Map<String, Object>> deleteFriendRequest(@RequestBody frie
         }
         return ResponseEntity.ok(null);
     }
+    @PostMapping("/getRelativeMy")
+    public ResponseEntity<?> getRelativeMy(@RequestBody friend friend) {
+        List<Object[]> relatives = friendRepository.findByRelative(friend.getIdMy());
+        if (!relatives.isEmpty()) {
+            return ResponseEntity.ok(relatives);
+        }
+        return ResponseEntity.ok(null);
+    }
 }

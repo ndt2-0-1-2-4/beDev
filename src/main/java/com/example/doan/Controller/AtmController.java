@@ -87,6 +87,8 @@ public class AtmController {
         try {
             // Tìm người chơi theo idPlayer
             Optional<atm> atmOpt = atmRepository.findByIdPlayer(request.getIdPlayer());
+            int balance = 5000;
+            request.setBalance(balance); // Đặt số dư mặc định là 5000
 
             if (atmOpt.isPresent()) {
                 // Nếu tài khoản ATM đã tồn tại, cập nhật stk
@@ -97,7 +99,7 @@ public class AtmController {
                 return ResponseEntity.ok(updatedAtm); // Trả về tài khoản đã cập nhật
             } else {
                 // Nếu chưa có tài khoản ATM, tạo mới
-                atm newAtm = new atm(request.getIdPlayer(), request.getStk());
+                atm newAtm = new atm(request.getIdPlayer() , request.getBalance(), request.getStk());
                 atm savedAtm = atmRepository.save(newAtm);
                 return ResponseEntity.ok(savedAtm); // Trả về tài khoản mới tạo
             }
@@ -240,7 +242,7 @@ public ResponseEntity<?> calculateReward(@RequestBody atm request) {
     Integer idPlayer = request.getIdPlayer();
     System.out.println("Nhận idPlayer: " + idPlayer);
 
-    Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "%Nạp tiền%");
+    Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "Nạp tiền%");
 
     if (totalDeposit == null) {
         totalDeposit = 0f;
@@ -250,7 +252,7 @@ public ResponseEntity<?> calculateReward(@RequestBody atm request) {
         {200_000_000, 1_579_000},
         {100_000_000,   879_000},
         {50_000_000,    360_000},
-        {10_000_000,    100_000},
+        {100_000,    100_000},
         {20_000,      40_000}
     };
 

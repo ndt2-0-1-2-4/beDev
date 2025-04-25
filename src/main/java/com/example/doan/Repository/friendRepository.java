@@ -35,6 +35,12 @@ public interface friendRepository extends JpaRepository<friend, Integer> {
          "AND f.idMy = :idMy")
    List<Object[]> findFriendNamesByIdAndRelative(@Param("idMy") Integer idMy);
 
+   @Query("SELECT u.id , u.fullname FROM friend f " +
+         "JOIN users u ON f.idFriend = u.id " +
+         "WHERE f.relative = 'Đang chờ' " +
+         "AND f.idMy = :idMy")
+   List<Object[]> findByRelative(@Param("idMy") Integer idMy);
+
    Optional<friend> findRelativeByIdMyAndIdFriend(Integer idMy, Integer idFriend);
 
    @Modifying
