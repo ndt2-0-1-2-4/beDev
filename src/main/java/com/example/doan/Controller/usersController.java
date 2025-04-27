@@ -1,5 +1,6 @@
 package com.example.doan.Controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import com.example.doan.Repository.HisBalanceRepo;
 import com.example.doan.Repository.MessageRepo;
 import com.example.doan.Model.JwtUtil;
 import com.example.doan.Model.atm;
+import com.example.doan.Model.friend;
 import com.example.doan.Repository.UsersRepository;
 import com.example.doan.Repository.atmRepository;
 import com.example.doan.Repository.betHisfbxsRepo;
@@ -114,13 +116,65 @@ public class usersController {
     @PostMapping("/searchFullname")
     public ResponseEntity<?> searchUserByName (@RequestBody users request) {
         List<users> users = usersRepository.findByFullnameContaining(request.getFullname());
+        List <Map<String,Object>> ResultUserSearchByName= new ArrayList<>(); 
         if (!users.isEmpty()) {
-            return ResponseEntity.ok(users);
+            for (users u : users) {
+                Optional<friend> f= friendRepository.getRelavtiveUser(request.getId(), u.getId());
+                Map<String,Object> map= new HashMap<>();
+                if(!f.isPresent()){
+                    map.put("id", u.getId());
+                    map.put("fullname",u.getFullname());
+                    map.put("relative", "Thêm bạn bè");
+                }
+                else{
+                    map.put("id", u.getId());
+                    map.put("fullname",u.getFullname());
+                    map.put("relative", f.get().getRelative());
+                }
+                
+                ResultUserSearchByName.add(map);
+            }
+            return ResponseEntity.ok(ResultUserSearchByName);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy");
         }
     }
 
+    @PostMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> payload) {
+        int userId = Integer.parseInt(payload.get("id"));
+        String oldPassword = payload.get("oldPassword");
+    String newPassword = payload.get("newPassword");
+
+    if (newPassword == null || newPassword.trim().isEmpty()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Mật khẩu mới không được để trống"));
+    }
+
+    Optional<users> optionalUser = usersRepository.findById(userId);
+    if (optionalUser.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Người dùng không tồn tại");
+    }
+
+    users user = optionalUser.get();
+
+    if (!user.getMk().equals(oldPassword)) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Mật khẩu cũ không đúng");
+    }
+
+    if (oldPassword.equals(newPassword)) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("message", "Vui lòng đổi mật khẩu mới không trùng mật khẩu cũ"));
+    }
+
+    // Cập nhật mật khẩu mới
+    user.setMk(newPassword);
+    usersRepository.save(user);
+
+    return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
+        
+    }
+    
    
 }
 

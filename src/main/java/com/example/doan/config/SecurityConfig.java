@@ -25,8 +25,8 @@ public class SecurityConfig  {
                                 .requestMatchers("/user/login").permitAll()
                                 .requestMatchers("/game/*").permitAll()
                                 // .requestMatchers("/Atm/search").permitAll()
-                                // .anyRequest().permitAll()
-                                .anyRequest().authenticated()
+                                .anyRequest().permitAll()
+                                // .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtUtil, UsernamePasswordAuthenticationFilter.class);
 
