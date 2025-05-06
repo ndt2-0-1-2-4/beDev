@@ -130,7 +130,7 @@ public class AdminController {
             sessionPlayerRepo.deleteByPlayerId(userId);
             atmRepository.deleteByAtmId(userId);
             hisBalanceRepo.deleteAllByUser(userId);
-            friendRepository.deleteAllByUser(userId);
+            // friendRepository.deleteAllByUser(userId);
             // Xoá user
             usersRepository.deleteById(userId);
             usersRepository.flush(); // Đảm bảo rằng các thay đổi đã được lưu vào cơ sở dữ liệu
