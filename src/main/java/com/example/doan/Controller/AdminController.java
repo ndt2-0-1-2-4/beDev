@@ -27,6 +27,8 @@ import com.example.doan.Repository.atmRepository;
 import com.example.doan.Repository.betHisfbxsRepo;
 import com.example.doan.Repository.friendRepository;
 import com.example.doan.Repository.sessionPlayerRepo;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RequestMapping("admin")
 @RestController
@@ -261,6 +263,46 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
+    @GetMapping("/getSumBetRengWin")
+    public ResponseEntity<?> getSumBetRengWin() {
+        try {
+            Integer sumBetRengWin = sessionPlayerRepo.sumRengBetWin();
+            return ResponseEntity.ok(sumBetRengWin != null ? sumBetRengWin : 0);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
+        }
+    }
+    
+    
+    @GetMapping("/getSumBetRengLose")
+    public ResponseEntity<?> getSumBetRengLose() {
+        try {
+            Integer sumBetRengLose = sessionPlayerRepo.sumRengBetLose();
+            return ResponseEntity.ok(sumBetRengLose != null ? sumBetRengLose : 0);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
+        }
+    }
+    @GetMapping("/getSumBetCLWin")
+    public ResponseEntity<?> getSumBetCLWin() {
+        try {
+            Integer sumBetCLWin = sessionPlayerRepo.sumTXBetWin();
+            return ResponseEntity.ok(sumBetCLWin != null ? sumBetCLWin : 0);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
+        }
+    }
+    @GetMapping("/getSumBetCLLose")
+    public ResponseEntity<?> getSumBetCLLose() {
+        try {
+            Integer sumBetCLLose = sessionPlayerRepo.sumTXBetLose();
+            return ResponseEntity.ok(sumBetCLLose != null ? sumBetCLLose : 0);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
+        }
+    }
+
+   
     
 
 
