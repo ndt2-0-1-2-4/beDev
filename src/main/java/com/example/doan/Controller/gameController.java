@@ -2,10 +2,14 @@ package com.example.doan.Controller;
 
 import java.util.*;
 import com.example.doan.Repository.sessionPlayerRepo;
+import com.example.doan.ws.GameCLHandler;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.doan.Model.historyBalance;
 import com.example.doan.Model.sessionGame;
@@ -15,7 +19,7 @@ import com.example.doan.Repository.sessionGameRepo;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@Controller
+@RestController
 @RequestMapping("game")
 public class gameController {
     @Autowired
@@ -24,6 +28,8 @@ public class gameController {
     private sessionGameRepo sessionGameRepo;
     @Autowired
     private HisBalanceRepo hisBalanceRepo;
+    @Autowired
+    private GameCLHandler gameCLHandler;
 
     @PostMapping("/getHistoryCl")
     public ResponseEntity<?> saveSession(@RequestBody sessionGame entity) {
@@ -77,4 +83,12 @@ public class gameController {
         // Trả về danh sách lịch sử
         return ResponseEntity.ok(rawList);
     }
+
+    @PostMapping("/force")
+public ResponseEntity<String> forceGameResult(@RequestParam int code) {
+    gameCLHandler.forceResult(code); 
+    String msg = "Kết quả kế tiếp sẽ là: " + (code == 1 ? "xỉu" : code == 2 ? "tài" : "random");
+    System.out.println(msg); 
+    return ResponseEntity.ok(msg);
+}
 }

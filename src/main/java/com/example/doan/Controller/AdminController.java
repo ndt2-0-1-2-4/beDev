@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,6 @@ import com.example.doan.Repository.betHisfbxsRepo;
 import com.example.doan.Repository.friendRepository;
 import com.example.doan.Repository.sessionPlayerRepo;
 import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RequestMapping("admin")
 @RestController
@@ -105,49 +105,42 @@ public class AdminController {
                 atmRepository.save(atm);
                 return ResponseEntity.ok(entity);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người chơi với ID: " + entity.getIdPlayer());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy người chơi với ID: " + entity.getIdPlayer());
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
 
-    
     // xoa user
-    @DeleteMapping("/delete")
-    public ResponseEntity<Map<String, String>> deleteUser(@RequestBody users request) {
+    @PutMapping("/delete")
+    public ResponseEntity<?> softDeleteUser(@RequestBody users request) {
         int userId = request.getId();
-
         Map<String, String> response = new HashMap<>();
 
-        if (!usersRepository.existsById(userId)) {
+        Optional<users> optionalUser = usersRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
             response.put("message", "Không tìm thấy người dùng với ID: " + userId);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         try {
-            // Xoá dữ liệu phụ (nếu có)
-            betHisfbxsRepo.deleteByBetHisfbxsId(userId);
-            MessageRepo.deleteAllMessagesByUser(userId);
-            sessionPlayerRepo.deleteByPlayerId(userId);
-            atmRepository.deleteByAtmId(userId);
-            hisBalanceRepo.deleteAllByUser(userId);
-            friendRepository.deleteAllByUser(userId);
-            // Xoá user
-            usersRepository.deleteById(userId);
-            usersRepository.flush(); // Đảm bảo rằng các thay đổi đã được lưu vào cơ sở dữ liệu
+            users user = optionalUser.get();
+            user.setIsDelete(true);
+            usersRepository.save(user);
 
-            response.put("message", "Xóa người dùng và các dữ liệu liên quan thành công");
+            response.put("message", "Đã đánh dấu người dùng là đã xóa (isDelete = true)");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.put("message", "Đã xảy ra lỗi khi xóa người dùng: " + e.getMessage());
+            response.put("message", "Lỗi khi cập nhật isDelete: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // tong tien thang 
+    // tong tien thang
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoney")
     public ResponseEntity<?> totalMoney(@RequestBody sessionPlayer request) {
@@ -157,10 +150,38 @@ public class AdminController {
             if (totalMoney != null && totalMoney > 0) {
                 return ResponseEntity.ok(totalMoney);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
             }
-        } catch (Exception e) { 
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/restore")
+    public ResponseEntity<?> restoreUser(@RequestBody users request) {
+        int userId = request.getId();
+        Map<String, String> response = new HashMap<>();
+
+        Optional<users> optionalUser = usersRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            response.put("message", "Không tìm thấy người dùng với ID: " + userId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        try {
+            users user = optionalUser.get();
+            user.setIsDelete(false);
+            user.setIsActive(true);
+            usersRepository.save(user);
+
+            response.put("message", "Đã khôi phục tài khoản (isActive = true, isDelete = false)");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.put("message", "Lỗi khi khôi phục tài khoản: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -173,12 +194,14 @@ public class AdminController {
             if (totalLost != null && totalLost > 0) {
                 return ResponseEntity.ok(totalLost);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
+
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoneyGame")
     public ResponseEntity<?> totalMoneyGame(@RequestBody sessionPlayer request) {
@@ -187,14 +210,15 @@ public class AdminController {
             if (totalMoney != null && totalMoney > 0) {
                 return ResponseEntity.ok(totalMoney);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
             }
-        } catch (Exception e) { 
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
 
-    //tongtien thua
+    // tongtien thua
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalLostGame")
     public ResponseEntity<?> totalLostGame(@RequestBody sessionPlayer request) {
@@ -203,14 +227,15 @@ public class AdminController {
             if (totalLost != null && totalLost > 0) {
                 return ResponseEntity.ok(totalLost);
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Không tìm thấy người chơi với ID: " + request.getPlayerId());
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
 
-    //Chẵn lẻ win
+    // Chẵn lẻ win
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalMoneyCL")
     public ResponseEntity<?> totalMoneyCL(@RequestBody sessionPlayer request) {
@@ -222,7 +247,7 @@ public class AdminController {
         }
     }
 
-    //Chẵn lẻ thua
+    // Chẵn lẻ thua
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/totalLostCL")
     public ResponseEntity<?> totalLostCL(@RequestBody sessionPlayer request) {
@@ -234,7 +259,7 @@ public class AdminController {
         }
     }
 
-    // dang ky stk 
+    // dang ky stk
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/registerAtm")
     public ResponseEntity<?> registerAtm(@RequestBody atm request) {
@@ -243,7 +268,7 @@ public class AdminController {
             if (atmOpt.isPresent()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Người chơi đã có tài khoản ATM");
             } else {
-                atm newAtm = new atm(request.getIdPlayer(), request.getBalance() , request.getStk());
+                atm newAtm = new atm(request.getIdPlayer(), request.getBalance(), request.getStk());
                 atm savedAtm = atmRepository.save(newAtm);
                 return ResponseEntity.ok(savedAtm);
             }
@@ -252,17 +277,19 @@ public class AdminController {
         }
     }
 
-    // them user 
+    // them user
     @PostMapping("/addUser")
     public ResponseEntity<?> addUser(@RequestBody users request) {
         try {
-            users newUser = new users(request.getTk(), request.getMk(), request.getFullname(), request.getEmail(), request.getRole());
+            users newUser = new users(request.getTk(), request.getMk(), request.getFullname(), request.getEmail(),
+                    request.getRole());
             users savedUser = usersRepository.save(newUser);
             return ResponseEntity.ok(savedUser);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
+
     @GetMapping("/getSumBetRengWin")
     public ResponseEntity<?> getSumBetRengWin() {
         try {
@@ -272,8 +299,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
-    
-    
+
     @GetMapping("/getSumBetRengLose")
     public ResponseEntity<?> getSumBetRengLose() {
         try {
@@ -283,6 +309,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
+
     @GetMapping("/getSumBetCLWin")
     public ResponseEntity<?> getSumBetCLWin() {
         try {
@@ -292,6 +319,7 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
     }
+
     @GetMapping("/getSumBetCLLose")
     public ResponseEntity<?> getSumBetCLLose() {
         try {
@@ -302,13 +330,4 @@ public class AdminController {
         }
     }
 
-   
-    
-
-
-
-    
-
-    
-     
 }

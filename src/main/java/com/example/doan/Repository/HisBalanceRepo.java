@@ -48,7 +48,7 @@ public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
         @Query("SELECT h FROM historyBalance h " +
                         "WHERE h.idPlayer = :playerId " +
                         "AND h.timeChange BETWEEN :startTime AND :endTime " +
-                        "AND h.content = 'Nạp tiền' " +
+                        "AND h.content LIKE 'Nạp tiền %' " +
                         "ORDER BY h.timeChange DESC")
         List<historyBalance> findDailyRechargeByPlayer(
                         @Param("playerId") int playerId,

@@ -62,7 +62,12 @@ public class AtmController {
         if (atmInfo.isPresent()) {
             return ResponseEntity.ok(atmInfo.get());
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy thông tin ATM");
+            // Tạo đối tượng lỗi
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Không tìm thấy thông tin ATM");
+            
+            // Trả về đối tượng lỗi dưới dạng JSON
+            return ResponseEntity.ok(errorResponse);
         }
     }
 
@@ -237,7 +242,7 @@ public ResponseEntity<?> calculateReward(@RequestBody atm request) {
     Integer idPlayer = request.getIdPlayer();
     System.out.println("Nhận idPlayer: " + idPlayer);
 
-    Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "%Nạp tiền%");
+    Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "Nạp tiền%");
 
     if (totalDeposit == null) {
         totalDeposit = 0f;
@@ -247,8 +252,8 @@ public ResponseEntity<?> calculateReward(@RequestBody atm request) {
         {200_000_000, 1_579_000},
         {100_000_000,   879_000},
         {50_000_000,    360_000},
-        {10_000_000,    100_000},
-        {2_000_000,      40_000}
+        {100_000,    100_000},
+        {20_000,      40_000}
     };
 
     Integer currentBalance = atmRepository.findBalanceByIdPlayer(idPlayer);

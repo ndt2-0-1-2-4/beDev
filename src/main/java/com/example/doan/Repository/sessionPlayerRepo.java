@@ -72,7 +72,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   Integer sumRengBetLose();
 
   @Query(value = """
-      SELECT SUM(h.bet)
+      SELECT SUM(h.reward)
       FROM sessionPlayer h
       WHERE h.result= "Thắng"
         AND h.namegame = 'Reng Reng'

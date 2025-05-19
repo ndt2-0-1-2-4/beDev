@@ -12,6 +12,10 @@ public class users {
     private String fullname;
     private String email;
     private String role;
+    @Column(name = "is_delete", columnDefinition = "BIT DEFAULT 0")
+    private Boolean isDelete = false;
+    @Column(name = "is_active", columnDefinition = "BIT DEFAULT 1")
+    private Boolean isActive = true;
     @OneToMany(mappedBy = "playerid")
     private List<sessionPlayer> sessionPlayers;
     public users() {}
@@ -65,5 +69,20 @@ public class users {
     }
     public String getRole() {
         return role;
+    }
+    public Boolean getIsDelete() {
+        return isDelete;
+    }
+
+    public void setIsDelete(Boolean isDelete) {
+        this.isDelete = isDelete;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 }

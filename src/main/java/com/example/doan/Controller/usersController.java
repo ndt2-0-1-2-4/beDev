@@ -1,5 +1,6 @@
 package com.example.doan.Controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import com.example.doan.Repository.HisBalanceRepo;
 import com.example.doan.Repository.MessageRepo;
 import com.example.doan.Model.JwtUtil;
 import com.example.doan.Model.atm;
+import com.example.doan.Model.friend;
 import com.example.doan.Repository.UsersRepository;
 import com.example.doan.Repository.atmRepository;
 import com.example.doan.Repository.betHisfbxsRepo;
@@ -65,26 +67,38 @@ public class usersController {
     }
     
     @PostMapping("/login") // Đăng nhập
-    public ResponseEntity<?> login(@Valid @RequestBody users loginRequest,HttpServletResponse response) {
-        Optional <users> user = usersRepository.findByTk(loginRequest.getTk());
-        if(user.isPresent() && user.get().getMk().equals(loginRequest.getMk())) {
-            Cookie cookieId = new Cookie("id", String.valueOf(user.get().getId()));
-            cookieId.setMaxAge(60 * 60 * 24 * 7);
-            fullname = user.get().getFullname();
-            response.addCookie(cookieId);
-            Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("id", user.get().getId());
-            responseBody.put("fullname", user.get().getFullname());
+public ResponseEntity<?> login(@Valid @RequestBody users loginRequest, HttpServletResponse response) {
+    Optional<users> user = usersRepository.findByTk(loginRequest.getTk());
 
-            //token
-            String token = jwtUtil.generateToken(user.get().getTk(),user.get().getRole());
+    if (user.isPresent()) {
+        users u = user.get();
+
+        // Kiểm tra nếu isDelete = true → không cho đăng nhập
+        if (Boolean.TRUE.equals(u.getIsDelete())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản đã bị xóa hoặc vô hiệu hóa.");
+        }
+
+        if (u.getMk().equals(loginRequest.getMk())) {
+            Cookie cookieId = new Cookie("id", String.valueOf(u.getId()));
+            cookieId.setMaxAge(60 * 60 * 24 * 7);
+            fullname = u.getFullname();
+            response.addCookie(cookieId);
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("id", u.getId());
+            responseBody.put("fullname", u.getFullname());
+
+            // Token
+            String token = jwtUtil.generateToken(u.getTk(), u.getRole());
             responseBody.put("token", token);
+
             return ResponseEntity.ok(responseBody);
         }
-        else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai tài khoản hoặc mật khẩu");
-        }
     }
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai tài khoản hoặc mật khẩu");
+}
+
     @PostMapping("/regis") // Đăng ký
     public ResponseEntity<?> regis(@RequestBody users entity){
         Optional <users> user = usersRepository.findByTk(entity.getTk());
@@ -114,8 +128,25 @@ public class usersController {
     @PostMapping("/searchFullname")
     public ResponseEntity<?> searchUserByName (@RequestBody users request) {
         List<users> users = usersRepository.findByFullnameContaining(request.getFullname());
+        List <Map<String,Object>> ResultUserSearchByName= new ArrayList<>(); 
         if (!users.isEmpty()) {
-            return ResponseEntity.ok(users);
+            for (users u : users) {
+                Optional<friend> f= friendRepository.getRelavtiveUser(request.getId(), u.getId());
+                Map<String,Object> map= new HashMap<>();
+                if(!f.isPresent()){
+                    map.put("id", u.getId());
+                    map.put("fullname",u.getFullname());
+                    map.put("relative", "Thêm bạn bè");
+                }
+                else{
+                    map.put("id", u.getId());
+                    map.put("fullname",u.getFullname());
+                    map.put("relative", f.get().getRelative());
+                }
+                
+                ResultUserSearchByName.add(map);
+            }
+            return ResponseEntity.ok(ResultUserSearchByName);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy");
         }
@@ -149,7 +180,7 @@ public class usersController {
     }
 
     // Cập nhật mật khẩu mới
-    user.setMk(newPassword);
+    user.setMk(newPassword);    
     usersRepository.save(user);
 
     return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));

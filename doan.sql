@@ -7,7 +7,9 @@
 		mk char(40),
 		fullname char(50),
 		email char(50),
-        role char(10)
+        role char(10),
+        is_delete BOOLEAN DEFAULT FALSE,
+		is_active BOOLEAN DEFAULT TRUE
 	);
 	insert into users(tk,mk,fullname,email,role) values 
 	('thanhdz','1','Phạm Như Thành','thanhit482004@gmail.com','user'),
