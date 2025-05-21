@@ -1,6 +1,6 @@
 package com.example.doan.Repository;
 
-import java.lang.classfile.ClassFile.Option;
+// import java.lang.classfile.ClassFile.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +33,6 @@ public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
 
         @Query("SELECT COUNT(h) > 0 FROM historyBalance h WHERE h.idPlayer = :idPlayer AND h.content = 'Thưởng nạp tiền' AND h.trans = :reward")
         boolean hasReceivedReward(@Param("idPlayer") Integer idPlayer, @Param("reward") Integer reward);
-
 
         // Lấy số dư
         @Query("SELECT h FROM historyBalance h WHERE h.idPlayer = :playerId AND " +
