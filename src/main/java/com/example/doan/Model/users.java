@@ -3,6 +3,7 @@ package com.example.doan.Model;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -30,6 +31,12 @@ public class users {
     private String tokenVerify;
     @Column(name = "is_verify")
     private Boolean isVerify = false;
+    @Column(name = "otp")
+    private String otp;
+    @Column(name = "expiry_otp")
+    private LocalDateTime expiryOtp;
+    @Column(name = "expiry_recovery")
+    private LocalDateTime expiryRecovery;
 
     public users() {
     }

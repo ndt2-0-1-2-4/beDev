@@ -16,10 +16,8 @@ public class UserService {
     private UsersRepository usersRepository;
 
     public void userVerify(String token) {
-        Optional<users> OptionalUser = usersRepository.findByTokenVerify(token);
-
-        if (OptionalUser.isPresent()) {
-            users u = OptionalUser.get();
+        users u = usersRepository.findByTokenVerify(token);
+        if (u != null) {
             u.setIsVerify(true);
             usersRepository.save(u);
         } else {

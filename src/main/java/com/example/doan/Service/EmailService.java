@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -41,38 +42,26 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            String emailBody = "Xin chào " + mailData.getModel().get("name") + ",\n\n" +
-                    "Cảm ơn bạn đã đăng ký tài khoản.\n" +
-                    "Email của bạn là: " + mailData.getModel().get("email") + "\n" +
-                    "Vui lòng truy cập liên kết sau để xác minh tài khoản: " +
-                    "http://localhost:8082/api/v1/auth/verify?token=" + mailData.getModel().get("token");
-
+            String emailBody = mailData.getTemplateName();
             helper.setFrom(fromEmail);
             helper.setTo(mailData.getEmailToName());
             helper.setSubject(mailData.getEmailSubject());
             helper.setText(emailBody, true);
-            users u = new users();
-            u.setEmail(mailData.getEmailToName());
-            u.setTokenVerify((String) mailData.getModel().get("token"));
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException("Failed to send email", e);
         }
     }
 
-    private String renderTemplate(String templateName, Map<String, Object> model) {
-        Context context = new Context();
-        model.forEach(context::setVariable);
-        return templateEngine.process(templateName, context);
-    }
-
-    public void verifyEmail(String token) {
-        Optional<users> user = usersRepository.findByTokenVerify(token);
+    public ResponseEntity<?> verifyEmail(String token) {
+        users user = usersRepository.findByTokenVerify(token);
         if (user != null) {
-            user.get().setIsVerify(true);
-            usersRepository.save(user.get());
+            user.setIsVerify(true);
+            user.setTokenVerify("");
+            usersRepository.save(user);
+            return ResponseEntity.ok("Xác minh thành công");
         } else {
-            throw new RuntimeException("Invalid verification token");
+            return ResponseEntity.badRequest().body("Token không tồn tại");
         }
     }
 }

@@ -25,9 +25,12 @@ public interface UsersRepository extends JpaRepository<users, Integer> {
     @Query(value = "SELECT * FROM users", nativeQuery = true)
     List<users> findAllUsers(); // Lấy tất cả người dùng từ bảng users
 
-    Optional<users> findByTokenVerify(String tokenVerify);
+    users findByTokenVerify(String tokenVerify);
 
     Boolean existsByTk(String tk);
 
     Boolean existsByEmail(String email);
+
+    users findByEmailAndIsDelete(String email, Boolean isDelete);
+
 }
