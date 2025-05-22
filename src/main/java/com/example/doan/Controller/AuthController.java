@@ -65,7 +65,10 @@ public class AuthController {
 
         // Gửi email
         emailService.sendMail(mailData);
-        return ResponseEntity.ok("User registered successfully!");
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "User registered successfully!");
+        return ResponseEntity.ok(response);
+
     }
 
     @PostMapping("/forget-pass")
