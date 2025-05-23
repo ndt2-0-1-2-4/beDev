@@ -36,7 +36,7 @@ public class VnPayController {
     private final String vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     private final String vnp_Version = "2.1.0";
     private final String vnp_Command = "pay";
-    private final String vnp_ReturnUrl = "http://localhost:4200/";
+    private final String vnp_ReturnUrl = "http://localhost:4200/payment-result";
 
     /**
      * API tạo URL thanh toán VnPay (phương thức mới sử dụng RequestBody)

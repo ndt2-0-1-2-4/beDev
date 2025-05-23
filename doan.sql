@@ -5,19 +5,24 @@
 		id int primary key auto_increment ,
 		tk char(40),
 		mk char(40),
-		fullname char(50),
-		email char(50),
-        role char(10)
+		fullname text,
+		email text,
+        role char(10),
+        is_delete BOOLEAN DEFAULT FALSE,
+		is_active BOOLEAN DEFAULT TRUE,
+        token_verify char(50),
+        is_verify BOOLEAN DEFAULT FALSE ,
+        otp char(6),
+        expiry_otp datetime,
+		expiry_recovery datetime
 	);
 	insert into users(tk,mk,fullname,email,role) values 
-	('thanhdz','1','Phạm Như Thành','thanhit482004@gmail.com','user'),
+    ('admin','admin','Admin','admin@gmail.com','admin'),
+	('thanhdz','1','Phạm Như Thành','thanh482004@gmail.com','user'),
 	('thanhcute','1','Nguyễn Văn Thiệu','thieucho@gmail.com','user'),
 	('thanh','1','Hạ Hầu Đôn','downmonkey@gmail.com','user'),
-	('thanh2004','1','Nguyễn Đình Hưng','thanhcute@gmail.com','user'),
-    ('thanh2006','1','Nguyễn Đình h','thanhcute1@gmail.com','user'),
-    ('thanh2005','1','Nguyễn Đình c','thanhcute2@gmail.com','user'),
-	('admin','admin','Admin','admin@gmail.com','ADMIN');
-	update users set id =0 where tk= 'admin';
+	('thanh2004','1','Nguyễn Đình Hưng','thanhcute@gmail.com','user');
+ 
 
 	create table listgame(
 		id int primary key auto_increment ,
@@ -33,7 +38,7 @@
 		id int primary key auto_increment,
 		namegame char(40) ,
 		playerid int ,
-		timeoccurs datetime,
+		timeoccurs char(50),
 		result char(20),
 		bet float ,
 		reward float,
@@ -59,11 +64,11 @@
 		foreign key (idplayer) references users(id)
 	);
 	insert into atm values
-    (0,'1',100000000000),
-	(1,'0787107821',5000),
-	(2,'04082004',5000),
-	(3,'30041975',5000),
-	(4,'66668888363636',5000);
+    (1,'admin',9999999999),
+	(2,'0787107821',5000),
+	(3,'04082004',5000),
+	(4,'30041975',5000),
+	(5,'66668888363636',5000);
 
 	create table historybalance(
 		id int primary key auto_increment ,
@@ -132,20 +137,4 @@
 		status tinyint default 0 ,
 		foreign key (id_my) references users(id),
 		foreign key (id_friend) references users(id)
-	);
-    
-    create table betHisfbxs(
-		id int primary key auto_increment,
-        idplayer int ,
-        bet_type ENUM('FOOTBALL', 'LOTTERY') NOT NULL,
-		reference_id varchar(255) NOT NULL,  -- id tham chieu (fb, xs)
-		prediction VARCHAR(255), -- du doan
-		bet_amount INT NOT NULL,
-		bet_time DATETIME DEFAULT CURRENT_TIMESTAMP,  -- thoi gian cuoc
-		multi int,
-        foreign key (idplayer) references users(id) ,
-		`status` BIT DEFAULT 0
-    );
-
-
-   
+	);	

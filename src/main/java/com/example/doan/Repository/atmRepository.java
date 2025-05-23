@@ -25,4 +25,7 @@ public interface atmRepository extends JpaRepository<atm, Integer> {
 
     @Query("SELECT a FROM atm a WHERE a.user.id = :userId")
     Optional<atm> findByUserId(@Param("userId") Integer userId);
+
+    @Query("SELECT a.balance FROM atm a WHERE a.idPlayer = :idPlayer")
+    Integer findBalanceByIdPlayer(@Param("idPlayer") Integer idPlayer);
 }

@@ -21,12 +21,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,11 +34,11 @@ import com.example.doan.Repository.UsersRepository;
 
 @Component
 public class JwtUtil extends OncePerRequestFilter{
-    private String apiKey="anhthanhdz";
+
+    @Value("${jwt.secret}")
+    private String apiKey;
     @Autowired 
     private UsersRepository usersRepository;
-    @Autowired 
-    private UserDetailsService userDetailsService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)throws ServletException, IOException {
         final String authorizationHeader = request.getHeader("Authorization");
@@ -64,10 +64,9 @@ public class JwtUtil extends OncePerRequestFilter{
                 System.out.println("Token expired");
             } catch (JwtException e) {
                 // Xử lý token không hợp lệ
-                System.out.println("Invalid token");
+                System.out.println("Invalid token");   
             }
-        }   
-       
+        }      
         //Nếu token hợp lệ, xác thực người dùng
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             Optional<users> u= this.usersRepository.findByTk(username);

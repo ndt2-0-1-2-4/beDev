@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -174,19 +175,50 @@ public class GameCLHandler extends TextWebSocketHandler {
             }
         }, 0, 1000);
     }
-    public void ShowRs() throws IOException{
+
+    // chinh kq txiu
+    private int forcedCode = 0; // 0:random, 1: xỉu, 2: tài
+    public void forceResult(int code) {
+        this.forcedCode = code;
+    }
+    
+    private List<Integer> generateDiceForResult(String expectedResult) {
         Random random = new Random();
-        int dice1 = random.nextInt(1,7);
-        int dice2 = random.nextInt(1,7);
-        int dice3 = random.nextInt(1,7);
-        int sum= dice1+dice2+dice3;
-        List<Integer> resultInt= new ArrayList<>();
-        resultInt.add(dice1);
-        resultInt.add(dice2);
-        resultInt.add(dice3);
+        while (true) {
+            int d1 = random.nextInt(1, 7);
+            int d2 = random.nextInt(1, 7);
+            int d3 = random.nextInt(1, 7);
+            int sum = d1 + d2 + d3;
+            if ((expectedResult.equals("tai") && sum > 10) || (expectedResult.equals("xiu") && sum <= 10)) {
+                return Arrays.asList(d1, d2, d3);
+            }
+        }
+    }
+
+    public void ShowRs() throws IOException{
+        List<Integer> resultInt;
+
+        if (forcedCode == 1) {
+        resultInt = generateDiceForResult("xiu");
+        } else if (forcedCode == 2) {
+            resultInt = generateDiceForResult("tai");
+        } else {
+            Random random = new Random();
+            resultInt = Arrays.asList(
+                random.nextInt(1, 7),
+                random.nextInt(1, 7),
+                random.nextInt(1, 7)
+            );
+        }
+
+        forcedCode = 0; // Reset về random sau khi sử dụng
+
+        int sum = resultInt.stream().mapToInt(Integer::intValue).sum();
         String resultString = resultInt.stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(", "));
+            .map(String::valueOf)
+            .collect(Collectors.joining(", "));
+        
+
         sessionGame sessionGame = new sessionGame();
         LocalDateTime currentDateTime = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

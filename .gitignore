@@ -4,6 +4,9 @@ fe/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+/src/main/resources/credentials.json
+tokens/
+email_exports/
 
 ### STS ###
 .apt_generated

@@ -66,6 +66,24 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   @Query(value = """
       SELECT SUM(h.bet)
       FROM sessionPlayer h
+      WHERE h.result= "Thua"
+        AND h.namegame = 'Reng Reng'
+      """, nativeQuery = true)
+  Integer sumRengBetLose();
+
+  @Query(value = """
+      SELECT SUM(h.reward)
+      FROM sessionPlayer h
+      WHERE h.result= "Thắng"
+        AND h.namegame = 'Reng Reng'
+      """, nativeQuery = true)
+  Integer sumRengBetWin();
+
+
+
+  @Query(value = """
+      SELECT SUM(h.bet)
+      FROM sessionPlayer h
       WHERE h.playerid = :idPlayer
         AND h.namegame = 'Tài xỉu'
         AND (
@@ -86,5 +104,27 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
             )
       """, nativeQuery = true)
   Integer sumClWin(@Param("idPlayer") Integer idPlayer);
+
+  @Query(value = """
+      SELECT SUM(h.bet)
+      FROM sessionPlayer h
+      WHERE  h.namegame = 'Tài xỉu'
+        AND (
+              (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'xiu') OR
+                  (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'tai')
+            )
+      """, nativeQuery = true)
+  Integer sumTXBetLose();
+
+  @Query(value = """
+      SELECT SUM(h.bet)
+      FROM sessionPlayer h
+      WHERE  h.namegame = 'Tài xỉu'
+        AND (
+              (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'tai') OR
+              (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'xiu')
+            )
+      """, nativeQuery = true)
+  Integer sumTXBetWin();
 
 }
