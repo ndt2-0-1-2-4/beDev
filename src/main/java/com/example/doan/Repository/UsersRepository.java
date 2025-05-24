@@ -27,6 +27,8 @@ public interface UsersRepository extends JpaRepository<users, Integer> {
 
     users findByTokenVerify(String tokenVerify);
 
+    users findByisVerify(Boolean isVerify);
+
     Boolean existsByTk(String tk);
 
     Boolean existsByEmail(String email);

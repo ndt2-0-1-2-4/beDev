@@ -72,37 +72,46 @@ public class usersController {
     }
 
     @PostMapping("/login") // Đăng nhập
-    public ResponseEntity<?> login(@Valid @RequestBody users loginRequest, HttpServletResponse response) {
-        Optional<users> user = usersRepository.findByTk(loginRequest.getTk());
+public ResponseEntity<?> login(@Valid @RequestBody users loginRequest, HttpServletResponse response) {
+    Optional<users> user = usersRepository.findByTk(loginRequest.getTk());
 
-        if (user.isPresent()) {
-            users u = user.get();
+    if (user.isPresent()) {
+        users u = user.get();
 
-            // Kiểm tra nếu isDelete = true → không cho đăng nhập
-            if (Boolean.TRUE.equals(u.getIsDelete())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản đã bị xóa hoặc vô hiệu hóa.");
-            }
-
-            if (u.getMk().equals(loginRequest.getMk())) {
-                Cookie cookieId = new Cookie("id", String.valueOf(u.getId()));
-                cookieId.setMaxAge(60 * 60 * 24 * 7);
-                fullname = u.getFullname();
-                response.addCookie(cookieId);
-
-                Map<String, Object> responseBody = new HashMap<>();
-                responseBody.put("id", u.getId());
-                responseBody.put("fullname", u.getFullname());
-
-                // Token
-                String token = jwtUtil.generateToken(u.getTk(), u.getRole());
-                responseBody.put("token", token);
-
-                return ResponseEntity.ok(responseBody);
-            }
+        // Kiểm tra nếu tài khoản đã bị xóa hoặc vô hiệu hóa
+        if (Boolean.TRUE.equals(u.getIsDelete())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản đã bị xóa hoặc vô hiệu hóa.");
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai tài khoản hoặc mật khẩu");
+        // Kiểm tra nếu is_token = true => chặn đăng nhập
+        if (Boolean.TRUE.equals(u.getTokenVerify())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Tài khoản này đã có token và không được phép đăng nhập lại.");
+        }
+
+        // Cho phép đăng nhập nếu đã được xác minh (is_verified = true) và đúng mật khẩu
+        if (Boolean.TRUE.equals(u.getIsVerify()) && u.getMk().equals(loginRequest.getMk())) {
+            Cookie cookieId = new Cookie("id", String.valueOf(u.getId()));
+            cookieId.setMaxAge(60 * 60 * 24 * 7);
+            fullname = u.getFullname();
+            response.addCookie(cookieId);
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("id", u.getId());
+            responseBody.put("fullname", u.getFullname());
+
+            // Token
+            String token = jwtUtil.generateToken(u.getTk(), u.getRole());
+            responseBody.put("token", token);
+
+            return ResponseEntity.ok(responseBody);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Tài khoản chưa xác minh hoặc sai mật khẩu.");
+        }
     }
+
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sai tài khoản hoặc mật khẩu");
+}
+
 
     @PostMapping("/regis") // Đăng ký
     public ResponseEntity<?> regis(@RequestBody users entity) {
