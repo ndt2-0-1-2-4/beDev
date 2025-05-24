@@ -41,7 +41,7 @@ public class PasswordService {
         Map<String, Object> model = new HashMap<>();
         model.put("name", u.getFullname());
         model.put("email", request.getEmail());
-        String resetlink = "http://localhost:8082/api/v1/auth/reset-password?token=" + token;
+        String resetlink = "http://localhost:4200/forgetpassword?token=" + token;
         MailData mailData = new MailData(
                 u.getEmail(),
                 "[SBCB] Kết quả khôi phục mật khẩu!",
