@@ -12,6 +12,8 @@ public interface UsersRepository extends JpaRepository<users, Integer> {
 
     Optional<users> findByTk(String tk);
 
+    Optional<users> findByEmail(String email);
+
     Optional<users> findByFullname(String fullname);
 
     List<users> findByFullnameContaining(String fullname);

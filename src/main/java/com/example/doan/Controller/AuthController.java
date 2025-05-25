@@ -38,37 +38,58 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> SignUp(@RequestBody users entity) {
-        if (usersRepository.existsByTk(entity.getTk())) {
-            return ResponseEntity.badRequest().body("Account is exits");
+        Optional<users> userByTk = usersRepository.findByTk(entity.getTk());
+        Optional<users> userByEmail = usersRepository.findByEmail(entity.getEmail());
+
+        // Trường hợp tài khoản đã tồn tại và chưa bị xóa
+        if (userByTk.isPresent() && !Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
+            return ResponseEntity.badRequest().body("Tài khoản đã tồn tại và đang hoạt động.");
         }
-        if (usersRepository.existsByEmail(entity.getEmail())) {
-            return ResponseEntity.badRequest().body("Email is exits");
+
+        if (userByEmail.isPresent() && !Boolean.TRUE.equals(userByEmail.get().getIsDelete())) {
+            return ResponseEntity.badRequest().body("Email đã được sử dụng và đang hoạt động.");
         }
+
+        // Nếu tài khoản bị xóa (is_delete = true) → ghi đè bản ghi
+        users userToSave;
+        if (userByTk.isPresent() && Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
+            userToSave = userByTk.get();
+            userToSave.setMk(entity.getMk());
+            userToSave.setFullname(entity.getFullname());
+            userToSave.setEmail(entity.getEmail());
+            userToSave.setIsDelete(false); // Khôi phục lại
+        } else {
+            userToSave = entity;
+        }
+
+        // Tạo token xác minh
         String token = UUID.randomUUID().toString();
-        entity.setTokenVerify(token);
-        entity.setRole("user");
-        usersRepository.save(entity);
+        userToSave.setTokenVerify(token);
+        userToSave.setRole("user");
+        userToSave.setIsVerify(false);
+        usersRepository.save(userToSave);
+
+        // Gửi email xác minh
         Map<String, Object> model = new HashMap<>();
-        model.put("name", entity.getFullname());
-        model.put("email", entity.getEmail());
+        model.put("name", userToSave.getFullname());
+        model.put("email", userToSave.getEmail());
         model.put("token", token);
-        // Tạo đối tượng MailData
+
         MailData mailData = new MailData(
-                entity.getEmail(),
+                userToSave.getEmail(),
                 "Xác minh tài khoản của bạn",
-                "Xin chào " + entity.getFullname() + ",\n\n" +
+                "Xin chào " + userToSave.getFullname() + ",\n\n" +
                         "Cảm ơn bạn đã đăng ký tài khoản.\n" +
-                        "Email của bạn là: " + entity.getEmail() + "\n" +
+                        "Email của bạn là: " + userToSave.getEmail() + "\n" +
                         "Vui lòng truy cập liên kết sau để xác minh tài khoản: " +
                         "http://localhost:8082/api/v1/auth/verify?token=" + token,
                 model);
 
-        // Gửi email
         emailService.sendMail(mailData);
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "User registered successfully!");
         return ResponseEntity.ok(response);
-
     }
 
     @PostMapping("/forget-pass")
