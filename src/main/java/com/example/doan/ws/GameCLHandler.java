@@ -90,10 +90,12 @@ public class GameCLHandler extends TextWebSocketHandler {
         else if(type.equals("bet")){
             handleChoiceMsg(jsonNode, idUser);
         }
+        else if(type.equals("changeRs")){
+            forceResult(jsonNode.get("code").asInt());
+        }
     }
 
     private void handleBetMsg(JsonNode jsonNode) throws Exception{
-
     }
     private void handleChoiceMsg(JsonNode jsonNode,String idUser) throws Exception{
         String choice =jsonNode.get("choice").asText();
@@ -174,7 +176,7 @@ public class GameCLHandler extends TextWebSocketHandler {
                 }
             }
         }, 0, 1000);
-    }
+    } 
 
     // chinh kq txiu
     private int forcedCode = 0; // 0:random, 1: xỉu, 2: tài
@@ -184,6 +186,7 @@ public class GameCLHandler extends TextWebSocketHandler {
     
     private List<Integer> generateDiceForResult(String expectedResult) {
         Random random = new Random();
+        System.out.println(expectedResult);
         while (true) {
             int d1 = random.nextInt(1, 7);
             int d2 = random.nextInt(1, 7);
@@ -197,7 +200,7 @@ public class GameCLHandler extends TextWebSocketHandler {
 
     public void ShowRs() throws IOException{
         List<Integer> resultInt;
-
+        System.out.println(forcedCode);
         if (forcedCode == 1) {
         resultInt = generateDiceForResult("xiu");
         } else if (forcedCode == 2) {

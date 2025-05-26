@@ -277,18 +277,7 @@ public class AdminController {
         }
     }
 
-    // them user
-    @PostMapping("/addUser")
-    public ResponseEntity<?> addUser(@RequestBody users request) {
-        try {
-            users newUser = new users(request.getTk(), request.getMk(), request.getFullname(), request.getEmail(),
-                    request.getRole());
-            users savedUser = usersRepository.save(newUser);
-            return ResponseEntity.ok(savedUser);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
-        }
-    }
+
 
     @GetMapping("/getSumBetRengWin")
     public ResponseEntity<?> getSumBetRengWin() {

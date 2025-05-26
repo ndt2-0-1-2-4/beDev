@@ -121,4 +121,16 @@ public class users {
     // public void setIsActive(Boolean isActive) {
     // this.isActive = isActive;
     // }
+    public String getTokenVerify() {
+        return tokenVerify;
+    }
+    public void setTokenVerify(String tokenVerify) {
+        this.tokenVerify = tokenVerify;
+    }
+    public Boolean getIsVerify() {
+        return isVerify;
+    }
+    public void setIsVerify(Boolean isVerify) {
+        this.isVerify = isVerify;
+    }
 }

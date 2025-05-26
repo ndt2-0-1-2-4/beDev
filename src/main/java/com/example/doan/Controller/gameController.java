@@ -85,10 +85,10 @@ public class gameController {
     }
 
     @PostMapping("/force")
-public ResponseEntity<String> forceGameResult(@RequestParam int code) {
-    gameCLHandler.forceResult(code); 
-    String msg = "Kết quả kế tiếp sẽ là: " + (code == 1 ? "xỉu" : code == 2 ? "tài" : "random");
-    System.out.println(msg); 
-    return ResponseEntity.ok(msg);
-}
+    public ResponseEntity<String> forceGameResult(@RequestParam int code) {
+        gameCLHandler.forceResult(code); 
+        String msg = "Kết quả kế tiếp sẽ là: " + (code == 1 ? "xỉu" : code == 2 ? "tài" : "random");
+        System.out.println(msg); 
+        return ResponseEntity.ok(msg);
+    }
 }

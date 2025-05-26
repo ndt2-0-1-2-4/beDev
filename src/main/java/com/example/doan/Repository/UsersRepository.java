@@ -12,6 +12,8 @@ public interface UsersRepository extends JpaRepository<users, Integer> {
 
     Optional<users> findByTk(String tk);
 
+    Optional<users> findByEmail(String email);
+
     Optional<users> findByFullname(String fullname);
 
     List<users> findByFullnameContaining(String fullname);
@@ -26,6 +28,8 @@ public interface UsersRepository extends JpaRepository<users, Integer> {
     List<users> findAllUsers(); // Lấy tất cả người dùng từ bảng users
 
     users findByTokenVerify(String tokenVerify);
+
+    users findByisVerify(Boolean isVerify);
 
     Boolean existsByTk(String tk);
 
