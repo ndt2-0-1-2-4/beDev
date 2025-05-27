@@ -16,11 +16,11 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface HisBalanceRepo extends JpaRepository<historyBalance, Integer> {
-        @Query(value = "SELECT id_player, timechange, content, trans, balance " +
+        @Query(value = "SELECT id,id_player, content, trans, balance , timechange " +
                         "FROM historybalance " +
                         "WHERE id_player = :idPlayer " +
                         "ORDER BY timechange DESC ", nativeQuery = true)
-        List<Object[]> findTop5ByIdPlayer(@Param("idPlayer") int idPlayer);
+        List<historyBalance> findTop5ByIdPlayer(@Param("idPlayer") int idPlayer);
 
         // xóa tất cả lịch sử giao dịch của người chơi
         @Modifying

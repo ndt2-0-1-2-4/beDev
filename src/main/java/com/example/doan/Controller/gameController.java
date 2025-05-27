@@ -48,28 +48,10 @@ public class gameController {
     public ResponseEntity<?> getPlayerHis(@RequestBody historyBalance entity) {
         int idPlayer = entity.getIdPlayer();
         System.out.println("ID PLAYER NHẬN ĐƯỢC: " + idPlayer);
-
         // Lấy danh sách từ repo
-        List<Object[]> rawList = hisBalanceRepo.findTop5ByIdPlayer(idPlayer);
-
-        // Tạo danh sách kết quả sau khi map
-        ArrayList<historyBalance> listHis = new ArrayList<>();
-
-        for (Object[] obj : rawList) {
-            historyBalance balance = new historyBalance();
-
-            // Giả sử thứ tự cột: id_player, timechange, content, trans, balance
-            balance.setPlayerId((Integer) obj[0]);
-            balance.setTimeChange((String) obj[1]);
-            balance.setContent((String) obj[2]);
-            balance.setTrans((Integer) obj[3]);
-            balance.setBalance((Integer) obj[4]); // hoặc BigDecimal nếu bạn dùng kiểu đó
-
-            listHis.add(balance);
-        }
-
+        List<historyBalance> rawList = hisBalanceRepo.findTop5ByIdPlayer(idPlayer);
         // Trả về danh sách lịch sử
-        return ResponseEntity.ok(listHis);
+        return ResponseEntity.ok(rawList);
 
     }
     @PostMapping("/getPlayerHisAll")
