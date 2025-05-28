@@ -10,8 +10,10 @@ import java.util.List;
 
 public interface UsersRepository extends JpaRepository<users, Integer> {
 
+    Optional<users> findByTkAndIsDelete(String tk, Boolean isDelete);
     Optional<users> findByTk(String tk);
 
+    Optional<users> findByEmailAndIsDelete(String email , Boolean isDelete);
     Optional<users> findByEmail(String email);
 
     Optional<users> findByFullname(String fullname);
@@ -34,7 +36,5 @@ public interface UsersRepository extends JpaRepository<users, Integer> {
     Boolean existsByTk(String tk);
 
     Boolean existsByEmail(String email);
-
-    users findByEmailAndIsDelete(String email, Boolean isDelete);
 
 }

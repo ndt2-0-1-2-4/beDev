@@ -106,7 +106,6 @@ public class GameCLHandler extends TextWebSocketHandler {
         else{
             totalMoneyT+=money;
         }
-        System.out.println(MoneyClient.get(idUser));
         int tempMoney;
         if(MoneyClient.get(idUser)!=null){
            tempMoney=MoneyClient.get(idUser)+money;
@@ -186,7 +185,6 @@ public class GameCLHandler extends TextWebSocketHandler {
     
     private List<Integer> generateDiceForResult(String expectedResult) {
         Random random = new Random();
-        System.out.println(expectedResult);
         while (true) {
             int d1 = random.nextInt(1, 7);
             int d2 = random.nextInt(1, 7);
@@ -200,7 +198,6 @@ public class GameCLHandler extends TextWebSocketHandler {
 
     public void ShowRs() throws IOException{
         List<Integer> resultInt;
-        System.out.println(forcedCode);
         if (forcedCode == 1) {
         resultInt = generateDiceForResult("xiu");
         } else if (forcedCode == 2) {

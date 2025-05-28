@@ -73,7 +73,7 @@ public class usersController {
 
     @PostMapping("/login") // Đăng nhập
 public ResponseEntity<?> login(@Valid @RequestBody users loginRequest, HttpServletResponse response) {
-    Optional<users> user = usersRepository.findByTk(loginRequest.getTk());
+    Optional<users> user = usersRepository.findByTkAndIsDelete(loginRequest.getTk() , false);
 
     if (user.isPresent()) {
         users u = user.get();

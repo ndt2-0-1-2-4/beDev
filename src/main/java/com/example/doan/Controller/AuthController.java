@@ -37,60 +37,59 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> SignUp(@RequestBody users entity) {
-        Optional<users> userByTk = usersRepository.findByTk(entity.getTk());
-        Optional<users> userByEmail = usersRepository.findByEmail(entity.getEmail());
+public ResponseEntity<?> SignUp(@RequestBody users entity) {
+    Optional<users> userByTk = usersRepository.findByTkAndIsDelete(entity.getTk(), false);
+    Optional<users> userByEmail = usersRepository.findByEmailAndIsDelete(entity.getEmail(), false);
 
-        // Trường hợp tài khoản đã tồn tại và chưa bị xóa
-        if (userByTk.isPresent() && !Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
-            return ResponseEntity.badRequest().body("Tài khoản đã tồn tại và đang hoạt động.");
-        }
-
-        if (userByEmail.isPresent() && !Boolean.TRUE.equals(userByEmail.get().getIsDelete())) {
-            return ResponseEntity.badRequest().body("Email đã được sử dụng và đang hoạt động.");
-        }
-
-        // Nếu tài khoản bị xóa (is_delete = true) → ghi đè bản ghi
-        users userToSave;
-        if (userByTk.isPresent() && Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
-            userToSave = userByTk.get();
-            userToSave.setMk(entity.getMk());
-            userToSave.setFullname(entity.getFullname());
-            userToSave.setEmail(entity.getEmail());
-            userToSave.setIsDelete(false); // Khôi phục lại
-        } else {
-            userToSave = entity;
-        }
-
-        // Tạo token xác minh
-        String token = UUID.randomUUID().toString();
-        userToSave.setTokenVerify(token);
-        userToSave.setRole("user");
-        userToSave.setIsVerify(false);
-        usersRepository.save(userToSave);
-
-        // Gửi email xác minh
-        Map<String, Object> model = new HashMap<>();
-        model.put("name", userToSave.getFullname());
-        model.put("email", userToSave.getEmail());
-        model.put("token", token);
-
-        MailData mailData = new MailData(
-                userToSave.getEmail(),
-                "Xác minh tài khoản của bạn",
-                "Xin chào " + userToSave.getFullname() + ",\n\n" +
-                        "Cảm ơn bạn đã đăng ký tài khoản.\n" +
-                        "Email của bạn là: " + userToSave.getEmail() + "\n" +
-                        "Vui lòng truy cập liên kết sau để xác minh tài khoản: " +
-                        "http://localhost:8082/api/v1/auth/verify?token=" + token,
-                model);
-
-        emailService.sendMail(mailData);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User registered successfully!");
-        return ResponseEntity.ok(response);
+    // Nếu tài khoản đã tồn tại và chưa bị xóa
+    if (userByTk.isPresent() && !Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
+        return ResponseEntity.badRequest().body("Tài khoản đã tồn tại và đang hoạt động.");
     }
+
+    // Nếu email đã tồn tại và chưa bị xóa
+    if (userByEmail.isPresent() && !Boolean.TRUE.equals(userByEmail.get().getIsDelete())) {
+        return ResponseEntity.badRequest().body("Email đã được sử dụng và đang hoạt động.");
+    }
+
+    // ✅ Không dùng lại tài khoản cũ đã xóa
+    users userToSave = new users();
+    userToSave.setTk(entity.getTk());
+    userToSave.setMk(entity.getMk());
+    userToSave.setFullname(entity.getFullname());
+    userToSave.setEmail(entity.getEmail());
+    userToSave.setIsDelete(false);
+
+    // Tạo token xác minh
+    String token = UUID.randomUUID().toString();
+    userToSave.setTokenVerify(token);
+    userToSave.setRole("user");
+    userToSave.setIsVerify(false);
+
+    usersRepository.save(userToSave);
+
+    // Gửi email xác minh
+    Map<String, Object> model = new HashMap<>();
+    model.put("name", userToSave.getFullname());
+    model.put("email", userToSave.getEmail());
+    model.put("token", token);
+
+    MailData mailData = new MailData(
+            userToSave.getEmail(),
+            "Xác minh tài khoản của bạn",
+            "Xin chào " + userToSave.getFullname() + ",\n\n" +
+                    "Cảm ơn bạn đã đăng ký tài khoản.\n" +
+                    "Email của bạn là: " + userToSave.getEmail() + "\n" +
+                    "Vui lòng truy cập liên kết sau để xác minh tài khoản: " +
+                    "http://192.168.1.173:8082/api/v1/auth/verify?token=" + token,
+            model);
+
+    emailService.sendMail(mailData);
+
+    Map<String, String> response = new HashMap<>();
+    response.put("message", "User registered successfully!");
+    return ResponseEntity.ok(response);
+}
+
 
     @PostMapping("/forget-pass")
     public ResponseEntity forgetPass(@RequestBody users entity) {

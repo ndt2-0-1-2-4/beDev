@@ -29,7 +29,7 @@ public class PasswordService {
 
     @Transactional
     public ResponseEntity<?> handleForgetPassword(users request) {
-        users u = usersRepository.findByEmailAndIsDelete(request.getEmail(), false);
+        users u = usersRepository.findByEmailAndIsDelete(request.getEmail(), false).orElse(null);
         if (u == null) {
             return ResponseEntity.badRequest().body("Tài khoản không tồn tại");
         }

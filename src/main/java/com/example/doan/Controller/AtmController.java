@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.doan.Model.atm;
 import com.example.doan.Model.historyBalance;
+import com.example.doan.Model.users;
 import com.example.doan.Repository.HisBalanceRepo;
 import com.example.doan.Repository.atmRepository;
 
@@ -65,7 +66,7 @@ public class AtmController {
             // Tạo đối tượng lỗi
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Không tìm thấy thông tin ATM");
-            
+
             // Trả về đối tượng lỗi dưới dạng JSON
             return ResponseEntity.ok(errorResponse);
         }
@@ -82,32 +83,43 @@ public class AtmController {
         Optional<atm> atm = atmRepository.findByStk(entity.getStk());
         return ResponseEntity.ok(atm);
     }
+
     @PostMapping("/createATM")
     public ResponseEntity<?> registerAtm(@RequestBody atm request) {
         try {
-            // Tìm người chơi theo idPlayer
+            // Kiểm tra stk có thuộc về user đã bị xóa không
+            List<users> deletedUsers = atmRepository.findDeletedUsersByStk(request.getStk());
+            if (!deletedUsers.isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("existed", false);
+                errorResponse.put("message", "Số tài khoản đã từng thuộc về người dùng bị xóa.");
+                // errorResponse.put("errorCode", "ATM_STK_BLOCKED");
+
+                return ResponseEntity.ok(errorResponse);
+            }
+
+            // Tìm tài khoản ATM theo idPlayer
             Optional<atm> atmOpt = atmRepository.findByIdPlayer(request.getIdPlayer());
             int balance = 5000;
-            request.setBalance(balance); // Đặt số dư mặc định là 5000
+            request.setBalance(balance); // đặt mặc định
 
             if (atmOpt.isPresent()) {
-                // Nếu tài khoản ATM đã tồn tại, cập nhật stk
-                atm existingAtm = atmOpt.get();
-                existingAtm.setStk(request.getStk()); // Cập nhật stk mới
-                atm updatedAtm = atmRepository.save(existingAtm); // Lưu lại vào DB
-
-                return ResponseEntity.ok(updatedAtm); // Trả về tài khoản đã cập nhật
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("exist", false);
+                errorResponse.put("message", "Tài khoản ATM đã tồn tại cho người chơi này.");
+                return ResponseEntity.ok(errorResponse);
             } else {
-                // Nếu chưa có tài khoản ATM, tạo mới
-                atm newAtm = new atm(request.getIdPlayer() , request.getBalance(), request.getStk());
+                // Tạo mới
+                atm newAtm = new atm(request.getIdPlayer(), request.getBalance(), request.getStk());
                 atm savedAtm = atmRepository.save(newAtm);
-                return ResponseEntity.ok(savedAtm); // Trả về tài khoản mới tạo
+                return ResponseEntity.ok(savedAtm);
             }
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
-
     }
+
     @GetMapping("/getDailyClosingBalance")
     public ResponseEntity<?> getDailyClosingBalance(
             @RequestParam int playerId,
@@ -166,7 +178,7 @@ public class AtmController {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Lỗi khi xử lý yêu cầu");
             errorResponse.put("details", e.getMessage());
-            return ResponseEntity.internalServerError().body(errorResponse);    
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 
@@ -238,61 +250,61 @@ public class AtmController {
     }
 
     @PostMapping("/calculate-reward")
-public ResponseEntity<?> calculateReward(@RequestBody atm request) {
-    Integer idPlayer = request.getIdPlayer();
-    System.out.println("Nhận idPlayer: " + idPlayer);
+    public ResponseEntity<?> calculateReward(@RequestBody atm request) {
+        Integer idPlayer = request.getIdPlayer();
+        System.out.println("Nhận idPlayer: " + idPlayer);
 
-    Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "Nạp tiền%");
+        Float totalDeposit = hisBalanceRepo.sumTotalDepositByIdAndContentLike(idPlayer, "Nạp tiền%");
 
-    if (totalDeposit == null) {
-        totalDeposit = 0f;
-    }
-
-    int[][] rewardLevels = {
-        {200_000_000, 1_579_000},
-        {100_000_000,   879_000},
-        {50_000_000,    360_000},
-        {100_000,    100_000},
-        {20_000,      40_000}
-    };
-
-    Integer currentBalance = atmRepository.findBalanceByIdPlayer(idPlayer);
-    int rewarded = 0;
-
-    for (int[] level : rewardLevels) {
-        int threshold = level[0];
-        int reward = level[1];
-
-        if (totalDeposit >= threshold && !hisBalanceRepo.hasReceivedReward(idPlayer, reward)) {
-            // Ghi nhận thưởng
-            historyBalance bonusRecord = new historyBalance();
-            bonusRecord.setPlayerId(idPlayer);
-            bonusRecord.setContent("Thưởng nạp tiền");
-            bonusRecord.setTrans(reward);
-            bonusRecord.setBalance(currentBalance != null ? currentBalance + reward : reward);
-            bonusRecord.setTimeChange(LocalDateTime.now().format(formatter));
-            hisBalanceRepo.save(bonusRecord);
-
-            // Cộng vào bảng atm
-            Optional<atm> existingAtmOpt = atmRepository.findByIdPlayer(idPlayer);
-            if (existingAtmOpt.isPresent()) {
-                atm existingAtm = existingAtmOpt.get();
-                existingAtm.setBalance(existingAtm.getBalance() + reward);
-                atmRepository.save(existingAtm);
-            }
-
-            rewarded = reward;
-            break; // chỉ cộng 1 lần, ở mốc cao nhất
+        if (totalDeposit == null) {
+            totalDeposit = 0f;
         }
+
+        int[][] rewardLevels = {
+                { 200_000_000, 1_579_000 },
+                { 100_000_000, 879_000 },
+                { 50_000_000, 360_000 },
+                { 100_000, 100_000 },
+                { 20_000, 40_000 }
+        };
+
+        Integer currentBalance = atmRepository.findBalanceByIdPlayer(idPlayer);
+        int rewarded = 0;
+
+        for (int[] level : rewardLevels) {
+            int threshold = level[0];
+            int reward = level[1];
+
+            if (totalDeposit >= threshold && !hisBalanceRepo.hasReceivedReward(idPlayer, reward)) {
+                // Ghi nhận thưởng
+                historyBalance bonusRecord = new historyBalance();
+                bonusRecord.setPlayerId(idPlayer);
+                bonusRecord.setContent("Thưởng nạp tiền");
+                bonusRecord.setTrans(reward);
+                bonusRecord.setBalance(currentBalance != null ? currentBalance + reward : reward);
+                bonusRecord.setTimeChange(LocalDateTime.now().format(formatter));
+                hisBalanceRepo.save(bonusRecord);
+
+                // Cộng vào bảng atm
+                Optional<atm> existingAtmOpt = atmRepository.findByIdPlayer(idPlayer);
+                if (existingAtmOpt.isPresent()) {
+                    atm existingAtm = existingAtmOpt.get();
+                    existingAtm.setBalance(existingAtm.getBalance() + reward);
+                    atmRepository.save(existingAtm);
+                }
+
+                rewarded = reward;
+                break; // chỉ cộng 1 lần, ở mốc cao nhất
+            }
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("idPlayer", idPlayer);
+        response.put("totalDeposit", totalDeposit);
+        response.put("reward", rewarded);
+        response.put("message", rewarded > 0 ? "Đã cộng thưởng vào lịch sử" : "Không đủ điều kiện nhận thêm thưởng");
+
+        return ResponseEntity.ok(response);
     }
-
-    Map<String, Object> response = new HashMap<>();
-    response.put("idPlayer", idPlayer);
-    response.put("totalDeposit", totalDeposit);
-    response.put("reward", rewarded);
-    response.put("message", rewarded > 0 ? "Đã cộng thưởng vào lịch sử" : "Không đủ điều kiện nhận thêm thưởng");
-
-    return ResponseEntity.ok(response);
-}
 
 }

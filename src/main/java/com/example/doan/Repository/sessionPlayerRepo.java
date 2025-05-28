@@ -28,7 +28,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   void deleteByPlayerId(@Param("id") int id);
 
   @Query(value = """
-      SELECT SUM(h.bet)
+      SELECT SUM( h.reward)
       FROM sessionPlayer h
       WHERE h.playerid = :idPlayer
         AND (
@@ -36,14 +36,14 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
               OR
               (h.namegame = 'Tài xỉu' AND (
                   (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'tai') OR
-                  (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'xiu')
+                  (CAST(h.result AS UNSIGNED) <= 10 AND h.choice = 'xiu')
               ))
             )
       """, nativeQuery = true)
   Integer sumBetWinAllGame(@Param("idPlayer") Integer idPlayer);
 
   @Query(value = """
-      SELECT SUM(h.bet)
+      SELECT SUM(DISTINCT h.bet)
       FROM sessionPlayer h
       WHERE h.playerid = :idPlayer
         AND (
@@ -51,7 +51,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
               OR
               (h.namegame = 'Tài xỉu' AND (
                   (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'xiu') OR
-                  (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'tai')
+                  (CAST(h.result AS UNSIGNED) <= 10 AND h.choice = 'tai')
               ))
             )
       """, nativeQuery = true)
@@ -60,7 +60,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   @Query("SELECT SUM(h.bet) FROM sessionPlayer h WHERE h.playerid = :idPlayer AND h.result = 'Thua' AND h.namegame = 'Reng Reng'")
   Integer sumRengLost(@Param("idPlayer") Integer idPlayer);
 
-  @Query("SELECT SUM(h.bet) FROM sessionPlayer h WHERE h.playerid = :idPlayer AND h.result = 'Thắng' AND h.namegame = 'Reng Reng'")
+  @Query("SELECT SUM(h.reward) FROM sessionPlayer h WHERE h.playerid = :idPlayer AND h.result = 'Thắng' AND h.namegame = 'Reng Reng'")
   Integer sumRengWin(@Param("idPlayer") Integer idPlayer);
 
   @Query(value = """
@@ -72,7 +72,7 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   Integer sumRengBetLose();
 
   @Query(value = """
-      SELECT SUM(h.reward)
+      SELECT SUM(DISTINCT h.reward)
       FROM sessionPlayer h
       WHERE h.result= "Thắng"
         AND h.namegame = 'Reng Reng'
@@ -80,49 +80,80 @@ public interface sessionPlayerRepo extends JpaRepository<sessionPlayer, Integer>
   Integer sumRengBetWin();
 
 
+@Query(value = """
+    SELECT SUM(h.bet)
+    FROM sessionPlayer h
+    WHERE h.playerid = :idPlayer
+      AND h.namegame = 'Tài xỉu'
+      AND (
+        (
+          TRIM(LOWER(h.choice)) = 'xiu' AND
+          (
+            CAST(SUBSTRING_INDEX(h.result, ':', 1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(h.result, ':', 2), ':', -1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(h.result, ':', -1) AS UNSIGNED)
+          ) > 10
+        )
+        OR
+        (
+          TRIM(LOWER(h.choice)) = 'tai' AND
+          (
+            CAST(SUBSTRING_INDEX(h.result, ':', 1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(h.result, ':', 2), ':', -1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(h.result, ':', -1) AS UNSIGNED)
+          ) <= 10
+        )
+      )
+    """, nativeQuery = true)
+Integer sumClLose(@Param("idPlayer") Integer idPlayer);
+
 
   @Query(value = """
-      SELECT SUM(h.bet)
-      FROM sessionPlayer h
-      WHERE h.playerid = :idPlayer
-        AND h.namegame = 'Tài xỉu'
-        AND (
-              (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'xiu') OR
-                  (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'tai')
-            )
-      """, nativeQuery = true)
-  Integer sumClLose(@Param("idPlayer") Integer idPlayer);
-
-  @Query(value = """
-      SELECT SUM(h.bet)
+      SELECT SUM( h.reward )
       FROM sessionPlayer h
       WHERE h.playerid = :idPlayer
         AND h.namegame = 'Tài xỉu'
         AND (
               (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'tai') OR
-              (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'xiu')
+              (CAST(h.result AS UNSIGNED) <= 10 AND h.choice = 'xiu')
             )
       """, nativeQuery = true)
   Integer sumClWin(@Param("idPlayer") Integer idPlayer);
 
   @Query(value = """
-      SELECT SUM(h.bet)
-      FROM sessionPlayer h
-      WHERE  h.namegame = 'Tài xỉu'
-        AND (
-              (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'xiu') OR
-                  (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'tai')
-            )
-      """, nativeQuery = true)
-  Integer sumTXBetLose();
+    SELECT SUM(h.bet)
+    FROM sessionPlayer h
+    WHERE h.namegame = 'Tài xỉu'
+      AND (
+        (
+          h.choice = 'xiu' AND
+          (
+            CAST(SUBSTRING_INDEX(h.result, ':', 1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(h.result, ':', 2), ':', -1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(h.result, ':', -1) AS UNSIGNED)
+          ) > 10
+        )
+        OR
+        (
+          h.choice = 'tai' AND
+          (
+            CAST(SUBSTRING_INDEX(h.result, ':', 1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(h.result, ':', 2), ':', -1) AS UNSIGNED) +
+            CAST(SUBSTRING_INDEX(h.result, ':', -1) AS UNSIGNED)
+          ) <= 10
+        )
+      )
+    """, nativeQuery = true)
+Integer sumTXBetLose();
+
 
   @Query(value = """
-      SELECT SUM(h.bet)
+      SELECT SUM( h.reward)
       FROM sessionPlayer h
       WHERE  h.namegame = 'Tài xỉu'
         AND (
               (CAST(h.result AS UNSIGNED) > 10 AND h.choice = 'tai') OR
-              (CAST(h.result AS UNSIGNED) < 10 AND h.choice = 'xiu')
+              (CAST(h.result AS UNSIGNED) <= 10 AND h.choice = 'xiu')
             )
       """, nativeQuery = true)
   Integer sumTXBetWin();

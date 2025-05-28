@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,9 @@ import com.example.doan.Repository.atmRepository;
 import com.example.doan.Repository.betHisfbxsRepo;
 import com.example.doan.Repository.friendRepository;
 import com.example.doan.Repository.sessionPlayerRepo;
+import com.example.doan.Service.EmailService;
+import com.example.doan.utils.MailData;
+
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RequestMapping("admin")
@@ -48,6 +52,8 @@ public class AdminController {
 
     @Autowired
     private atmRepository atmRepository;
+    @Autowired
+    private EmailService emailService;
 
     // @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/hello")
@@ -111,6 +117,41 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> SignUp(@RequestBody users entity) {
+        Optional<users> userByTk = usersRepository.findByTkAndIsDelete(entity.getTk(), false);
+        Optional<users> userByEmail = usersRepository.findByEmailAndIsDelete(entity.getEmail(), false);
+
+        // Trường hợp tài khoản đã tồn tại và chưa bị xóa
+        if (userByTk.isPresent() && !Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
+            return ResponseEntity.badRequest().body("Tài khoản đã tồn tại và đang hoạt động.");
+        }
+
+        if (userByEmail.isPresent() && !Boolean.TRUE.equals(userByEmail.get().getIsDelete())) {
+            return ResponseEntity.badRequest().body("Email đã được sử dụng và đang hoạt động.");
+        }
+
+        // Nếu tài khoản bị xóa (is_delete = true) → ghi đè bản ghi
+        users userToSave;
+        if (userByTk.isPresent() && Boolean.TRUE.equals(userByTk.get().getIsDelete())) {
+            userToSave = userByTk.get();
+            userToSave.setMk(entity.getMk());
+            userToSave.setFullname(entity.getFullname());
+            userToSave.setEmail(entity.getEmail());
+            userToSave.setIsDelete(false); // Khôi phục lại
+        } else {
+            userToSave = entity;
+        }
+
+        userToSave.setRole("user");
+        userToSave.setIsVerify(true);
+        usersRepository.save(userToSave);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "User registered successfully!");
+        return ResponseEntity.ok(response);
     }
 
     // xoa user
@@ -207,6 +248,8 @@ public class AdminController {
     public ResponseEntity<?> totalMoneyGame(@RequestBody sessionPlayer request) {
         try {
             Integer totalMoney = sessionPlayerRepo.sumRengWin(request.getPlayerId());
+            System.out.println("ID Người chơi: " + request.getPlayerId());
+            System.out.println("Tổng tiền thắng: " + totalMoney);
             if (totalMoney != null && totalMoney > 0) {
                 return ResponseEntity.ok(totalMoney);
             } else {
@@ -261,22 +304,6 @@ public class AdminController {
 
     // dang ky stk
     // @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/registerAtm")
-    public ResponseEntity<?> registerAtm(@RequestBody atm request) {
-        try {
-            Optional<atm> atmOpt = atmRepository.findByIdPlayer(request.getIdPlayer());
-            if (atmOpt.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Người chơi đã có tài khoản ATM");
-            } else {
-                atm newAtm = new atm(request.getIdPlayer(), request.getBalance(), request.getStk());
-                atm savedAtm = atmRepository.save(newAtm);
-                return ResponseEntity.ok(savedAtm);
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xử lý yêu cầu: " + e.getMessage());
-        }
-    }
-
 
 
     @GetMapping("/getSumBetRengWin")
